@@ -446,6 +446,7 @@ FodyWeavers.xsd
 *.key
 
 .env
+BackendUri
 certs/
 testsettings.development.json
 config.development.yaml
