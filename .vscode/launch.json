@@ -32,7 +32,11 @@
       "cwd": "${workspaceFolder}",
       "stopAtEntry": false,
       "console": "internalConsole",
-      "envFile": "${input:dotEnvFilePath}"
+      "envFile": "${input:dotEnvFilePath}",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7871"
+      },
     }
   ],
   "inputs": [
