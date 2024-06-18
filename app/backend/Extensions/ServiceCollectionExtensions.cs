@@ -11,7 +11,7 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<BlobServiceClient>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
-            var azureStorageAccountEndpoint = config["AzureStorageAccountEndpoint"];
+            var azureStorageAccountEndpoint = config["AZURE_STORAGE_BLOB_ENDPOINT"];
             ArgumentNullException.ThrowIfNullOrEmpty(azureStorageAccountEndpoint);
 
             var blobServiceClient = new BlobServiceClient(
@@ -23,17 +23,17 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<BlobContainerClient>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
-            var azureStorageContainer = config["AzureStorageContainer"];
+            var azureStorageContainer = config["AZURE_STORAGE_CONTAINER"];
             return sp.GetRequiredService<BlobServiceClient>().GetBlobContainerClient(azureStorageContainer);
         });
 
         services.AddSingleton<ISearchService, AzureSearchService>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
-            var azureSearchServiceEndpoint = config["AzureSearchServiceEndpoint"];
+            var azureSearchServiceEndpoint = config["AZURE_SEARCH_SERVICE_ENDPOINT"];
             ArgumentNullException.ThrowIfNullOrEmpty(azureSearchServiceEndpoint);
 
-            var azureSearchIndex = config["AzureSearchIndex"];
+            var azureSearchIndex = config["AZURE_SEARCH_INDEX"];
             ArgumentNullException.ThrowIfNullOrEmpty(azureSearchIndex);
 
             var searchClient = new SearchClient(
@@ -45,7 +45,7 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<DocumentAnalysisClient>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
-            var azureOpenAiServiceEndpoint = config["AzureOpenAiServiceEndpoint"] ?? throw new ArgumentNullException();
+            var azureOpenAiServiceEndpoint = config["AZURE_OPENAI_ENDPOINT"] ?? throw new ArgumentNullException();
 
             var documentAnalysisClient = new DocumentAnalysisClient(
                 new Uri(azureOpenAiServiceEndpoint), s_azureCredential);
@@ -55,10 +55,10 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<OpenAIClient>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
-            var useAOAI = config["UseAOAI"] == "true";
+            var useAOAI = config["USE_AOAI"] == "true";
             if (useAOAI)
             {
-                var azureOpenAiServiceEndpoint = config["AzureOpenAiServiceEndpoint"];
+                var azureOpenAiServiceEndpoint = config["AZURE_OPENAI_ENDPOINT"];
                 ArgumentNullException.ThrowIfNullOrEmpty(azureOpenAiServiceEndpoint);
 
                 var openAIClient = new OpenAIClient(new Uri(azureOpenAiServiceEndpoint), s_azureCredential);
@@ -79,7 +79,6 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<ReadRetrieveReadChatService>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
-            var useVision = config["UseVision"] == "true";
             var openAIClient = sp.GetRequiredService<OpenAIClient>();
             var searchClient = sp.GetRequiredService<ISearchService>();
             return new ReadRetrieveReadChatService(searchClient, openAIClient, config, tokenCredential: s_azureCredential);

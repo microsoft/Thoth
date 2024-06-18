@@ -2,7 +2,12 @@
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.ConfigureAzureKeyVault();
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
+// :( builder.Configuration.ConfigureAzureKeyVault();
 
 // See: https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
