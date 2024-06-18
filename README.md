@@ -366,3 +366,50 @@ to production. Here are some things to consider:
 **_Question_**: Why do we need to break up the PDFs into chunks when Azure AI Search supports searching large documents?
 
 **_Answer_**: Chunking allows us to limit the amount of information we send to OpenAI due to token limits. By breaking up the content, it allows us to easily find potential chunks of text that we can inject into OpenAI. The method of chunking we use leverages a sliding window of text such that sentences that end one chunk will start the next. This allows us to reduce the chance of losing the context of the text.
+
+## Local Config for appsettings and user secrets
+``` json
+{
+  "USE_VISION": "false",
+  "USE_AOAI": "true",
+  "SERVICE_WEB_NAME": "",
+  "SERVICE_WEB_IDENTITY_NAME": "",
+  "SERVICE_FUNCTION_IDENTITY_PRINCIPAL_ID": "",
+  "OPENAI_EMBEDDING_DEPLOYMENT": "",
+  "AZURE_TENANT_ID": "",
+  "AZURE_STORAGE_RESOURCE_GROUP": "",
+  "AZURE_STORAGE_CONTAINER": "content",
+  "AZURE_STORAGE_BLOB_ENDPOINT": "",
+  "AZURE_STORAGE_ACCOUNT": "",
+  "AZURE_SEARCH_SERVICE_RESOURCE_GROUP": "",
+  "AZURE_SEARCH_SERVICE_ENDPOINT": "",
+  "AZURE_SEARCH_SERVICE": "",
+  "AZURE_SEARCH_INDEX": "",
+  "AZURE_RESOURCE_GROUP": "",
+  "AZURE_OPENAI_SERVICE": "",
+  "AZURE_OPENAI_RESOURCE_LOCATION": "eastus",
+  "AZURE_OPENAI_RESOURCE_GROUP": "",
+  "AZURE_OPENAI_ENDPOINT": "",
+  "AZURE_OPENAI_EMBEDDING_DEPLOYMENT": "",
+  "AZURE_OPENAI_CHATGPT_MODEL_VERSION": "",
+  "AZURE_OPENAI_CHATGPT_MODEL_NAME": "",
+  "AZURE_OPENAI_CHATGPT_DEPLOYMENT": "",
+  "AZURE_LOCATION": "",
+  "AZURE_KEY_VAULT_RESOURCE_GROUP": "",
+  "AZURE_KEY_VAULT_NAME": "",
+  "AZURE_KEY_VAULT_ENDPOINT": "",
+  "AZURE_FORMRECOGNIZER_SERVICE_ENDPOINT": "",
+  "AZURE_FORMRECOGNIZER_SERVICE": "",
+  "AZURE_FORMRECOGNIZER_RESOURCE_GROUP": "",
+  "AZURE_CONTAINER_REGISTRY_RESOURCE_GROUP": "",
+  "AZURE_CONTAINER_REGISTRY_NAME": "",
+  "AZURE_CONTAINER_REGISTRY_ENDPOINT": "",
+  "AZURE_CONTAINER_ENVIRONMENT_NAME": "",
+  "AZURE_COMPUTERVISION_SERVICE_ENDPOINT": "",
+  "AZURE_COMPUTERVISION_SERVICE": "",
+  "AZURE_COMPUTERVISION_RESOURCE_GROUP": "",
+  "APPLICATIONINSIGHTS_NAME": "",
+  "APPLICATIONINSIGHTS_CONNECTION_STRING": ""
+}
+
+```

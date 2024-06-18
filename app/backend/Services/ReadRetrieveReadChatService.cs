@@ -26,24 +26,24 @@ public class ReadRetrieveReadChatService
         _searchClient = searchClient;
         var kernelBuilder = Kernel.CreateBuilder();
 
-        if (configuration["UseAOAI"] == "false")
+        if (configuration["USE_AOAI"] == "false")
         {
-            var deployment = configuration["OpenAiChatGptDeployment"];
+            var deployment = configuration["AZURE_OPENAI_CHATGPT_DEPLOYMENT"];
             ArgumentNullException.ThrowIfNullOrWhiteSpace(deployment);
             kernelBuilder = kernelBuilder.AddOpenAIChatCompletion(deployment, client);
 
-            var embeddingModelName = configuration["OpenAiEmbeddingDeployment"];
+            var embeddingModelName = configuration["AZURE_OPENAI_EMBEDDING_DEPLOYMENT"];
             ArgumentNullException.ThrowIfNullOrWhiteSpace(embeddingModelName);
             kernelBuilder = kernelBuilder.AddOpenAITextEmbeddingGeneration(embeddingModelName, client);
         }
         else
         {
-            var deployedModelName = configuration["AzureOpenAiChatGptDeployment"];
+            var deployedModelName = configuration["AZURE_OPENAI_CHATGPT_DEPLOYMENT"];
             ArgumentNullException.ThrowIfNullOrWhiteSpace(deployedModelName);
-            var embeddingModelName = configuration["AzureOpenAiEmbeddingDeployment"];
+            var embeddingModelName = configuration["AZURE_OPENAI_EMBEDDING_DEPLOYMENT"];
             if (!string.IsNullOrEmpty(embeddingModelName))
             {
-                var endpoint = configuration["AzureOpenAiServiceEndpoint"];
+                var endpoint = configuration["AZURE_OPENAI_ENDPOINT"];
                 ArgumentNullException.ThrowIfNullOrWhiteSpace(endpoint);
                 kernelBuilder = kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(embeddingModelName, endpoint, tokenCredential ?? new DefaultAzureCredential());
                 kernelBuilder = kernelBuilder.AddAzureOpenAIChatCompletion(deployedModelName, endpoint, tokenCredential ?? new DefaultAzureCredential());

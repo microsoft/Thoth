@@ -6,7 +6,7 @@ internal static class ConfigurationExtensions
 {
     internal static string GetStorageAccountEndpoint(this IConfiguration config)
     {
-        var endpoint = config["AzureStorageAccountEndpoint"];
+        var endpoint = config["AZURE_STORAGE_BLOB_ENDPOINT"];
         ArgumentNullException.ThrowIfNullOrEmpty(endpoint);
 
         return endpoint;
@@ -18,7 +18,7 @@ internal static class ConfigurationExtensions
 
         var builder = new UriBuilder(endpoint)
         {
-            Path = config["AzureStorageContainer"]
+            Path = config["AZURE_STORAGE_CONTAINER"]
         };
 
         return builder.Uri.AbsoluteUri;
