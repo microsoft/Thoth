@@ -85,38 +85,18 @@ var host = new HostBuilder()
             var documentClient = provider.GetRequiredService<DocumentAnalysisClient>();
             var logger = provider.GetRequiredService<ILogger<AzureSearchEmbedService>>();
 
-            if (useVision)
-            {
-                var visionEndpoint = Environment.GetEnvironmentVariable("AZURE_COMPUTER_VISION_ENDPOINT") ?? throw new ArgumentNullException("AZURE_COMPUTER_VISION_ENDPOINT is null");
-                var httpClient = new HttpClient();
-                var visionClient = new AzureComputerVisionService(httpClient, visionEndpoint, new DefaultAzureCredential());
 
-                return new AzureSearchEmbedService(
-                    openAIClient: openAIClient,
-                    embeddingModelName: embeddingModelName,
-                    searchClient: searchClient,
-                    searchIndexName: searchIndexName,
-                    searchIndexClient: searchIndexClient,
-                    documentAnalysisClient: documentClient,
-                    corpusContainerClient: corpusContainer,
-                    computerVisionService: visionClient,
-                    includeImageEmbeddingsField: true,
-                    logger: logger);
-            }
-            else
-            {
-                return new AzureSearchEmbedService(
-                openAIClient: openAIClient,
-                embeddingModelName: embeddingModelName,
-                searchClient: searchClient,
-                searchIndexName: searchIndexName,
-                searchIndexClient: searchIndexClient,
-                documentAnalysisClient: documentClient,
-                corpusContainerClient: corpusContainer,
-                computerVisionService: null,
-                includeImageEmbeddingsField: false,
-                logger: logger);
-            }
+            return new AzureSearchEmbedService(
+            openAIClient: openAIClient,
+            embeddingModelName: embeddingModelName,
+            searchClient: searchClient,
+            searchIndexName: searchIndexName,
+            searchIndexClient: searchIndexClient,
+            documentAnalysisClient: documentClient,
+            corpusContainerClient: corpusContainer,
+            computerVisionService: null,
+            includeImageEmbeddingsField: false,
+            logger: logger);
         });
     })
     .ConfigureFunctionsWorkerDefaults()

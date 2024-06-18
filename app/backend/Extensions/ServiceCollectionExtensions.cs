@@ -82,19 +82,7 @@ internal static class ServiceCollectionExtensions
             var useVision = config["UseVision"] == "true";
             var openAIClient = sp.GetRequiredService<OpenAIClient>();
             var searchClient = sp.GetRequiredService<ISearchService>();
-            if (useVision)
-            {
-                var azureComputerVisionServiceEndpoint = config["AzureComputerVisionServiceEndpoint"];
-                ArgumentNullException.ThrowIfNullOrEmpty(azureComputerVisionServiceEndpoint);
-                var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient();
-                
-                var visionService = new AzureComputerVisionService(httpClient, azureComputerVisionServiceEndpoint, s_azureCredential);
-                return new ReadRetrieveReadChatService(searchClient, openAIClient, config, visionService, s_azureCredential);
-            }
-            else
-            {
-                return new ReadRetrieveReadChatService(searchClient, openAIClient, config, tokenCredential: s_azureCredential);
-            }
+            return new ReadRetrieveReadChatService(searchClient, openAIClient, config, tokenCredential: s_azureCredential);
         });
 
         return services;

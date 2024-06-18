@@ -27,7 +27,6 @@ internal static partial class Program
             var openAIClient = await GetOpenAIClientAsync(o);
             var embeddingModelName = o.EmbeddingModelName ?? throw new ArgumentNullException(nameof(o.EmbeddingModelName));
             var searchIndexName = o.SearchIndexName ?? throw new ArgumentNullException(nameof(o.SearchIndexName));
-            var computerVisionService = await GetComputerVisionServiceAsync(o);
 
             return new AzureSearchEmbedService(
                 openAIClient: openAIClient,
@@ -37,8 +36,6 @@ internal static partial class Program
                 searchIndexClient: searchIndexClient,
                 documentAnalysisClient: documentClient,
                 corpusContainerClient: blobContainerClient,
-                computerVisionService: computerVisionService,
-                includeImageEmbeddingsField: computerVisionService != null,
                 logger: null);
         });
 
@@ -146,20 +143,7 @@ internal static partial class Program
 
             return s_searchClient;
         });
-
-    private static Task<IComputerVisionService?> GetComputerVisionServiceAsync(AppOptions options) =>
-        GetLazyClientAsync<IComputerVisionService?>(options, s_openAILock, async o =>
-        {
-            await Task.CompletedTask;
-            var endpoint = o.ComputerVisionServiceEndpoint;
-
-            if (string.IsNullOrEmpty(endpoint))
-            {
-                return null;
-            }
-
-            return new AzureComputerVisionService(new HttpClient(), endpoint, DefaultCredential);
-        });
+    
 
     private static Task<OpenAIClient> GetOpenAIClientAsync(AppOptions options) =>
        GetLazyClientAsync<OpenAIClient>(options, s_openAILock, async o =>
