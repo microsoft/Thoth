@@ -110,16 +110,7 @@ standard plan AND dental AND employee benefit.
         }
         else
         {
-            documentContents = string.Join("\r", documentContentList.Select(x =>$"{x.Title}:{x.Content}"));
-        }
-
-        // step 2.5
-        // retrieve images if _visionService is available
-        SupportingImageRecord[]? images = default;
-        if (_visionService is not null)
-        {
-            var queryEmbeddings = await _visionService.VectorizeTextAsync(query ?? question, cancellationToken);
-            images = await _searchClient.QueryImagesAsync(query, queryEmbeddings.vector, overrides, cancellationToken);
+            documentContents = string.Join("\r", documentContentList.Select(x => $"{x.Title}:{x.Content}"));
         }
 
         // step 3
@@ -140,33 +131,8 @@ standard plan AND dental AND employee benefit.
             }
         }
 
-        
-        if (images != null)
-        {
-            var prompt = @$"## Source ##
-{documentContents}
-## End ##
 
-Answer question based on available source and images.
-Your answer needs to be a json object with answer and thoughts field.
-Don't put your answer between ```json and ```, return the json string directly. e.g {{""answer"": ""I don't know"", ""thoughts"": ""I don't know""}}";
-
-            var tokenRequestContext = new TokenRequestContext(new[] { "https://storage.azure.com/.default" });
-            var sasToken = await (_tokenCredential?.GetTokenAsync(tokenRequestContext, cancellationToken) ?? throw new InvalidOperationException("Failed to get token"));
-            var sasTokenString = sasToken.Token;
-            var imageUrls = images.Select(x => $"{x.Url}?{sasTokenString}").ToArray();
-            var collection = new ChatMessageContentItemCollection();
-            collection.Add(new TextContent(prompt));
-            foreach (var imageUrl in imageUrls)
-            {
-                collection.Add(new ImageContent(new Uri(imageUrl)));
-            }
-
-            answerChat.AddUserMessage(collection);
-        }
-        else
-        {
-            var prompt = @$" ## Source ##
+        var prompt = @$" ## Source ##
 {documentContents}
 ## End ##
 
@@ -175,8 +141,7 @@ You answer needs to be a json object with the following format.
     ""answer"": // the answer to the question, add a source reference to the end of each sentence. e.g. Apple is a fruit [reference1.pdf][reference2.pdf]. If no source available, put the answer as I don't know.
     ""thoughts"": // brief thoughts on how you came up with the answer, e.g. what sources you used, what you thought about, etc.
 }}";
-            answerChat.AddUserMessage(prompt);
-        }
+        answerChat.AddUserMessage(prompt);
 
         var promptExecutingSetting = new OpenAIPromptExecutionSettings
         {
@@ -232,7 +197,6 @@ e.g.
         var responseMessage = new ResponseMessage("assistant", ans);
         var responseContext = new ResponseContext(
             DataPointsContent: documentContentList.Select(x => new SupportingContentRecord(x.Title, x.Content)).ToArray(),
-            DataPointsImages: images?.Select(x => new SupportingImageRecord(x.Title, x.Url)).ToArray(),
             FollowupQuestions: followUpQuestionList ?? Array.Empty<string>(),
             Thoughts: new[] { new Thoughts("Thoughts", thoughts) });
 

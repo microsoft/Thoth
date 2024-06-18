@@ -36,7 +36,8 @@
         },
         {
             "label": "build",
-            "dependsOn": ["map env vars", "build backend", "build frontend"]
+            //"dependsOn": ["map env vars", "build backend", "build frontend"]
+            "dependsOn": ["build backend", "build frontend"]
         },
     ],
     "inputs": [
