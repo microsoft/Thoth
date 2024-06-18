@@ -14,7 +14,6 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "AZURE_KEY_VAULT_ENDPOINT": "https://kv-tzddsfqru776o.vault.azure.net/"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7181"
