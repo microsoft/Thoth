@@ -54,12 +54,12 @@
                         </pre>
                     </MudPaper>
                 </ChildContent>
-            </MudTabPanel>
+            </MudTabPanel>            
             <MudTabPanel Icon="@Icons.Material.Filled.TextSnippet" Text="Supporting Content"
                          ToolTip="Show the supporting content." Disabled="@(Retort is { Context.DataPoints.Text: null } or { Context.DataPoints.Text.Length: 0 })">
                 <ChildContent>
                     <MudPaper Class="pa-2" Elevation="3">
-                        <SupportingContent DataPoints="Retort.Context.DataPointsContent" Images="Retort.Context.DataPointsImages ?? []" />
+                        <SupportingContent DataPoints="Retort.Context.DataPointsContent" />
                     </MudPaper>
                 </ChildContent>
             </MudTabPanel>

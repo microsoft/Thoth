@@ -21,7 +21,6 @@ public record Thoughts(
 
 public record ResponseContext(
     [property: JsonPropertyName("dataPointsContent")] SupportingContentRecord[]? DataPointsContent,
-    [property: JsonPropertyName("dataPointsImages")] SupportingImageRecord[]? DataPointsImages,
     [property: JsonPropertyName("followup_questions")] string[] FollowupQuestions,
     [property: JsonPropertyName("thoughts")] Thoughts[] Thoughts)
 {
