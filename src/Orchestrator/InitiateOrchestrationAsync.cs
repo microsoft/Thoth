@@ -2,21 +2,22 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using System.Net;
 
 namespace Orchestrator;
 
-public static partial class RunOrchestrator
+public partial class Orchestrator
 {
     [Function(nameof(InitiateOrchestrationAsync))]
     public static async Task<HttpResponseData> InitiateOrchestrationAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req, [DurableClient] DurableTaskClient client,
         FunctionContext executionContext)
     {
-        ILogger logger = executionContext.GetLogger("InitiateOrchestrationAsync");
+        ILogger logger = executionContext.GetLogger(nameof(InitiateOrchestrationAsync));
 
         try
         {
-            var queryInput = req.Query["name"];
+            var queryInput = req.Query["subject"];
 
             var instanceId = await client.ScheduleNewOrchestrationInstanceAsync(nameof(RunOrchestrator), queryInput);
 
