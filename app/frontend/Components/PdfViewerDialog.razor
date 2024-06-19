@@ -17,6 +17,9 @@
         </MudContainer>
     </DialogContent>
     <DialogActions>
+        <MudIconButton Icon="@Icons.Material.Outlined.Email" Disabled="true" aria-label="share" OnClick="@SendToEmailAsync"></MudIconButton>
+        <MudIconButton Icon="@Icons.Material.Filled.Share" Disabled="true" aria-label="share" OnClick="@SendToTeamsAsync"></MudIconButton>
+        @* todo: switch to teams button *@
         <MudButton Color="Color.Primary" Size="Size.Large"
                    StartIcon="@Icons.Material.Filled.Close"
                    OnClick="@OnCloseClick">Close</MudButton>
