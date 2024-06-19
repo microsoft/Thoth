@@ -3,7 +3,7 @@
     "tasks": [
         {
             "label": "build backend",
-            "type": "shell",
+            "type": "process",
             "command": "dotnet",
             "args": [
                 "build",
@@ -12,7 +12,7 @@
         },
         {
             "label": "build frontend",
-            "type": "shell",
+            "type": "process",
             "command": "dotnet",
             "args": [
                 "build",
