@@ -11,6 +11,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\js\sendToTeams.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\js\sendToTeams.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\js\sendToTeams.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Blazor.LocalStorage.WebAssembly" />
     <PackageReference Include="Blazor.SessionStorage.WebAssembly" />
     <PackageReference Include="Blazor.SpeechRecognition.WebAssembly" />
