@@ -243,7 +243,6 @@ module web './app/web.bicep' = {
     runtimeVersion: '8.0'
     identityName: !empty(webIdentityName) ? webIdentityName : '${abbrs.managedIdentityUserAssignedIdentities}web-${resourceToken}'
     applicationInsightsName: monitoring.outputs.applicationInsightsName
-    keyVaultName: keyVault.outputs.name
     storageBlobEndpoint: storage.outputs.primaryEndpoints.blob
     storageContainerName: storageContainerName
     searchServiceEndpoint: searchService.outputs.endpoint

@@ -11,9 +11,6 @@ param applicationInsightsName string
 @description('The name of the service')
 param serviceName string = 'web'
 
-@description('The name of the Key Vault')
-param keyVaultName string
-
 @description('The storage blob endpoint')
 param storageBlobEndpoint string
 
@@ -102,7 +99,12 @@ module app '../core/host/appservice.bicep' = {
     appServicePlanId: appServicePlan.outputs.id
     clientAffinityEnabled: clientAffinityEnabled
     enableOryxBuild: enableOryxBuild
-    keyVaultName: keyVaultName
+    userIdentity: {
+      type: 'UserAssigned'
+      userAssignedIdentities: {
+        '${webIdentity.id}': {}
+      }
+    }
     kind: kind
     linuxFxVersion: linuxFxVersion
     runtimeName: runtimeName
