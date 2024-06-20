@@ -4,10 +4,18 @@ namespace SharedWebComponents.Shared;
 
 public sealed partial class MainLayout
 {
+
+    [Inject]
+    private NavigationManager _navigationManager { get; set; }
+    [Inject]
+    private ChatHistoryService _chatHistoryService { get; set; }
     private readonly MudTheme _theme = new();
     private bool _drawerOpen = true;
+    private bool _chatHistoryDrawer = false;
     private bool _settingsOpen = false;
     private SettingsPanel? _settingsPanel;
+    private MudListItem? _selectedItem = null;
+   
 
     private bool _isDarkTheme
     {
@@ -45,4 +53,18 @@ public sealed partial class MainLayout
     private void OnThemeChanged() => _isDarkTheme = !_isDarkTheme;
 
     private void OnIsReversedChanged() => _isReversed = !_isReversed;
+
+    private void OnChatHistoryClicked() => _chatHistoryDrawer = !_chatHistoryDrawer;
+
+    protected void OnItemClick(EventArgs e, int chatId)
+    {
+        _navigationManager.NavigateTo($"/chat?chatId={chatId}");
+    }
+
+    protected void OnDeleteSessionClick(EventArgs e, int chatId)
+    {
+        _chatHistoryService.DeleteChatHistorySession(chatId);
+    }
 }
+
+public record Chat(string Name, int Id, DateTime TimeStamp);

@@ -1,4 +1,4 @@
-﻿@inherits             LayoutComponentBase
+﻿@inherits LayoutComponentBase
 
 <MudThemeProvider @bind-IsDarkMode="@_isDarkTheme" Theme="_theme" />
 <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small"
@@ -15,8 +15,8 @@
     <MudLayout class="@(_isRightToLeft ? "rtl-lang" : "")">
         <MudAppBar Elevation="20">
             <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" id="nav-toggle"
-                        Title="Toggle navigation sidebar"
-                        Size="Size.Large" Edge="Edge.Start" OnClick="@OnMenuClicked" />
+                           Title="Toggle navigation sidebar"
+                           Size="Size.Large" Edge="Edge.Start" OnClick="@OnMenuClicked" />
             @if (SortDisabled is false)
             {
                 <MudTooltip Text="@(_isReversed ? "Sort conversations with latest answers on bottom" : "Sort conversations with latest answers on top")"
@@ -31,18 +31,22 @@
             @if (SettingsDisabled is false)
             {
                 <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Tertiary" Size="Size.Large"
-                           Title="Open the developer settings side panel"
-                           OnClick="@(_ => _settingsOpen = _settingsOpen is false)" />
+                               Title="Open the developer settings side panel"
+                               OnClick="@(_ => _settingsOpen = _settingsOpen is false)" />
             }
             <MudToggleIconButton Toggled="@_isDarkTheme" ToggledChanged=@OnThemeChanged Size="Size.Large"
-                                ToggledSize="Size.Large"
+                                 ToggledSize="Size.Large"
                                  Title="Switch to Dark theme" Icon=@Icons.Material.Filled.DarkMode Color="@Color.Inherit"
-                                ToggledTitle="Switch to Light theme" ToggledIcon=@Icons.Material.Filled.WbSunny ToggledColor=@Color.Warning />
+                                 ToggledTitle="Switch to Light theme" ToggledIcon=@Icons.Material.Filled.WbSunny ToggledColor=@Color.Warning />
             <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Size="Size.Large"
-                        Title="Visit the Azure Samples: GitHub repository for this app."
-                        Href="https://github.com/Azure-Samples/azure-search-openai-demo-csharp" Target="_blank" />
+                           Title="Visit the Azure Samples: GitHub repository for this app."
+                           Href="https://github.com/Azure-Samples/azure-search-openai-demo-csharp" Target="_blank" />
+            <MudIconButton Icon="@Icons.Material.Filled.HistoryEdu" Color="Color.Inherit" id="chat-history-toggle"
+                           Title="Toggle chat history sidebar"
+                           Size="Size.Large" Edge="Edge.Start" OnClick="@OnChatHistoryClicked" />
             <LogoutDisplay />
         </MudAppBar>
+
         <MudDrawer @bind-Open="_drawerOpen" Elevation="5" id="drawer">
             <MudDrawerHeader>
                 <MudImage Src="favicon.png" Class="rounded filter-shadow" Alt="Blazor Logo" Width="30" Height="30" Elevation="0" />
@@ -54,6 +58,23 @@
             <MudDivider Style="flex-grow: 0;" />
             <NavMenu />
         </MudDrawer>
+
+        <MudDrawer @bind-Open="_chatHistoryDrawer" Anchor="Anchor.End" Elevation="5" id="chat-history-drawer">
+            <MudDrawerHeader>
+                <MudText Typo="Typo.h5" Color=Color.Surface>
+                    <MudIcon Icon="@Icons.Material.Filled.HistoryEdu" />
+                    Chat History
+                </MudText>
+            </MudDrawerHeader>
+            <MudDivider Style="flex-grow: 0;" />
+            <MudList Clickable="true" Dense="true">
+                @foreach (var chat in _chatHistoryService.GetChatHistorySessions())
+                {
+                    <MudListItem OnClick="@(e => OnItemClick(e, chat.Id))" Text="@chat.Name" />
+                }
+            </MudList>
+        </MudDrawer>
+
         <MudMainContent>
             <MudContainer MaxWidth="MaxWidth.Large" Fixed="false" Class="my-6 pt-6">
                 <CascadingValue Value="_settingsPanel?.Settings" Name="Settings">
