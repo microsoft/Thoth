@@ -252,6 +252,7 @@ module web './app/web.bicep' = {
     openAiEndpoint: useAOAI ? azureOpenAi.outputs.endpoint : ''
     openAiChatGptDeployment: useAOAI ? azureChatGptDeploymentName : ''
     openAiEmbeddingDeployment: useAOAI ? azureEmbeddingDeploymentName : ''
+    useAOAI: useAOAI
   }
 }
 
