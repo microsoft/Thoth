@@ -73,13 +73,24 @@
             </MudItem>
             <MudItem xs="0" lg="2" Class="d-flex align-self-center">
                 <MudGrid Justify="Justify.Center">
-                    <MudItem xs="9" Class="pa-2">
+                    <MudItem xs="6" Class="pa-2">
                         <MudFab Color="Color.Secondary" Size="Size.Large"
                                 StartIcon=@Icons.Material.Filled.Send Class="full-width"
                                 Label="Chat" aria-label="Ask question button."
                                 OnClick="@OnAskClickedAsync"
                                 Disabled=@(_isReceivingResponse || string.IsNullOrWhiteSpace(_userQuestion)) />
                     </MudItem>
+
+                    <MudItem xs="3" Class="pa-2">
+                        <MudTooltip Arrow="true" Text="Save chat history" Placement="Placement.Top">
+                            <MudFab Color="Color.Primary" Size="Size.Medium"
+                                    StartIcon=@Icons.Material.Filled.Save
+                                    aria-label="Save chat."
+                                    OnClick="@OnSaveChat" Disabled=@(_isReceivingResponse || _questionAndAnswerMap is { Count: 0 }) />
+                        </MudTooltip>
+                    </MudItem>
+
+
                     <MudItem xs="3" Class="pa-2">
                         <MudTooltip Arrow="true" Text="Clear chat history" Placement="Placement.Top">
                             <MudFab Color="Color.Primary" Size="Size.Medium"

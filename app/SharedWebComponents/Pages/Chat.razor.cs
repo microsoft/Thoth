@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using static System.Net.WebRequestMethods;
+
 namespace SharedWebComponents.Pages;
 
 public sealed partial class Chat
@@ -9,7 +11,7 @@ public sealed partial class Chat
     private string _lastReferenceQuestion = "";
     private bool _isReceivingResponse = false;
 
-    private readonly Dictionary<UserQuestion, ChatAppResponseOrError?> _questionAndAnswerMap = [];
+    private Dictionary<UserQuestion, ChatAppResponseOrError?> _questionAndAnswerMap = [];
 
     [Inject] public required ISessionStorageService SessionStorage { get; set; }
 
@@ -25,6 +27,29 @@ public sealed partial class Chat
     {
         _userQuestion = question;
         return OnAskClickedAsync();
+    }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name="chatId")]
+    public string ChatSessionId { get; set; }
+    [Inject]
+    internal ChatHistoryService ChatHistoryService { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ChatSessionId))
+        {
+            return;
+        }
+
+        if (!int.TryParse(ChatSessionId, out int chatSessionId))
+        {
+            return;
+        }
+
+        var chatHistorySession = ChatHistoryService.GetChatHistorySession(chatSessionId);
+
+        _questionAndAnswerMap = chatHistorySession.QuestionAnswerMap;
     }
 
     private async Task OnAskClickedAsync()
@@ -62,6 +87,11 @@ public sealed partial class Chat
         {
             _isReceivingResponse = false;
         }
+    }
+
+    private void OnSaveChat()
+    {
+        ChatHistoryService.AddChatHistorySession(_questionAndAnswerMap);
     }
 
     private void OnClearChat()
