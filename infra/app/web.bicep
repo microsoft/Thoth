@@ -11,9 +11,6 @@ param applicationInsightsName string
 @description('The name of the service')
 param serviceName string = 'web'
 
-@description('The name of the Key Vault')
-param keyVaultName string
-
 @description('The storage blob endpoint')
 param storageBlobEndpoint string
 
@@ -40,6 +37,9 @@ param openAiEmbeddingDeployment string
 
 @description('The OpenAI API key')
 param openAiApiKey string
+
+@description('Whether to use Azure OpenAI')
+param useAOAI bool = true
 
 resource webIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: identityName
@@ -78,6 +78,7 @@ var appSettings = {
     AZURE_OPENAI_CHATGPT_DEPLOYMENT: openAiChatGptDeployment
     AZURE_OPENAI_EMBEDDING_DEPLOYMENT: openAiEmbeddingDeployment
     OPENAI_API_KEY: openAiApiKey
+    USE_AOAI: useAOAI ? 'true' : 'false'
 }
 
 module appServicePlan '../core/host/appserviceplan.bicep' = {
@@ -102,7 +103,12 @@ module app '../core/host/appservice.bicep' = {
     appServicePlanId: appServicePlan.outputs.id
     clientAffinityEnabled: clientAffinityEnabled
     enableOryxBuild: enableOryxBuild
-    keyVaultName: keyVaultName
+    userIdentity: {
+      type: 'UserAssigned'
+      userAssignedIdentities: {
+        '${webIdentity.id}': {}
+      }
+    }
     kind: kind
     linuxFxVersion: linuxFxVersion
     runtimeName: runtimeName
