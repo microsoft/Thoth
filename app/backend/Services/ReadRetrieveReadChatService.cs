@@ -71,7 +71,7 @@ public class ReadRetrieveReadChatService
         float[]? embeddings = null;
         var question = history.LastOrDefault(m => m.IsUser)?.Content is { } userQuestion
             ? userQuestion
-            : throw new InvalidOperationException("Use question is null");
+            : throw new InvalidOperationException("User question is null");
 
         string[]? followUpQuestionList = null;
         if (overrides?.RetrievalMode != RetrievalMode.Text && embedding is not null)
@@ -85,11 +85,11 @@ public class ReadRetrieveReadChatService
         if (overrides?.RetrievalMode != RetrievalMode.Vector)
         {
             var getQueryChat = new ChatHistory(@"You are a helpful AI assistant, generate search query for followup question.
-Make your respond simple and precise. Return the query only, do not return any other text.
-e.g.
-Northwind Health Plus AND standard plan.
-standard plan AND dental AND employee benefit.
-");
+                                    Make your response simple and precise. Return the query only, do not return any other text.
+                                    e.g.
+                                    Northwind Health Plus AND standard plan.
+                                    standard plan AND dental AND employee benefit.
+                                    ");
 
             getQueryChat.AddUserMessage(question);
             var result = await chat.GetChatMessageContentAsync(
@@ -131,22 +131,30 @@ standard plan AND dental AND employee benefit.
             }
         }
 
-
-        var prompt = @$" ## Source ##
-{documentContents}
-## End ##
-
-You answer needs to be a json object with the following format.
-{{
-    ""answer"": // the answer to the question, add a source reference to the end of each sentence. e.g. Apple is a fruit [reference1.pdf][reference2.pdf]. If no source available, put the answer as I don't know.
-    ""thoughts"": // brief thoughts on how you came up with the answer, e.g. what sources you used, what you thought about, etc.
-}}";
+        var prompt = $$$"""
+            ## Source ##
+            {{{documentContents}}}
+            ## End ##
+            Provide brief thoughts on how you came up with the answer, e.g. what sources you used, what you thought about, etc.
+            If you can't answer a question with the information available in the source, please say you can't answer it. Do not use general knowledge.
+            Your answer always will be in valid json whether you find relevant data or not.
+            {
+                "answer": "There is no information available on that subject.",
+                "thoughts": "Did not find any relevant information."
+            }
+            ## Valid Answer Example: ##
+            {
+                "answer": "If the patient discloses after you have already started seeing them for other reasons and the note was already written.",
+                "thoughts": "I found a similar case in document x and used that to extrapolate an answer."
+            }
+            ## End Example ##
+            """;
         answerChat.AddUserMessage(prompt);
 
         var promptExecutingSetting = new OpenAIPromptExecutionSettings
         {
             MaxTokens = 1024,
-            Temperature = overrides?.Temperature ?? 0.7,
+            Temperature = overrides?.Temperature ?? 0.5,
             StopSequences = [],
         };
 
@@ -166,17 +174,17 @@ You answer needs to be a json object with the following format.
         {
             var followUpQuestionChat = new ChatHistory(@"You are a helpful AI assistant");
             followUpQuestionChat.AddUserMessage($@"Generate three follow-up question based on the answer you just generated.
-# Answer
-{ans}
+                        # Answer
+                        {ans}
 
-# Format of the response
-Return the follow-up question as a json string list. Don't put your answer between ```json and ```, return the json string directly.
-e.g.
-[
-    ""What is the deductible?"",
-    ""What is the co-pay?"",
-    ""What is the out-of-pocket maximum?""
-]");
+                        # Format of the response
+                        Return the follow-up question as a json string list. Don't put your answer between ```json and ```, return the json string directly.
+                        e.g.
+                        [
+                            ""What is the deductible?"",
+                            ""What is the co-pay?"",
+                            ""What is the out-of-pocket maximum?""
+                        ]");
 
             var followUpQuestions = await chat.GetChatMessageContentAsync(
                 followUpQuestionChat,

@@ -17,13 +17,13 @@ param tags string = ''
     type: 'location'
   }
 })
-param openAiResourceGroupLocation string
+param openAiResourceGroupLocation string = 'eastus2'
 
 @description('Name of the chat GPT model. Default: gpt-35-turbo')
-@allowed([ 'gpt-35-turbo', 'gpt-4', 'gpt-35-turbo-16k', 'gpt-4-16k' ])
-param azureOpenAIChatGptModelName string = 'gpt-35-turbo'
+@allowed([ 'gpt-35-turbo', 'gpt-4', 'gpt-4o' , 'gpt-35-turbo-16k', 'gpt-4-16k' ])
+param azureOpenAIChatGptModelName string = 'gpt-4o'
 
-param azureOpenAIChatGptModelVersion string ='0613'
+param azureOpenAIChatGptModelVersion string ='2024-05-13'
 
 @description('Name of the Azure Application Insights dashboard')
 param applicationInsightsDashboardName string = ''
@@ -59,7 +59,7 @@ param azureEmbeddingDeploymentName string = 'embedding'
 param embeddingDeploymentCapacity int = 30
 
 @description('Name of the embedding model. Default: text-embedding-ada-002')
-param azureEmbeddingModelName string = 'text-embedding-ada-002'
+param azureEmbeddingModelName string = 'text-embedding-3-small'
 
 @description('Name of the container apps environment')
 param containerAppsEnvironmentName string = ''
@@ -119,7 +119,7 @@ param resourceGroupName string = ''
 param searchIndexName string = 'gptkbindex'
 
 @description('Name of the Azure AI Search service')
-param searchServiceName string = ''
+param searchServiceName string = 'aisThoth'
 
 @description('Location of the resource group for the Azure AI Search service')
 param searchServiceResourceGroupLocation string = location
@@ -407,7 +407,7 @@ module azureOpenAi 'core/ai/cognitiveservices.bicep' = if (useAOAI) {
         model: {
           format: 'OpenAI'
           name: azureEmbeddingModelName
-          version: '2'
+          version: '1'
         }
         sku: {
           name: 'Standard'

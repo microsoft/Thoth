@@ -14,10 +14,11 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
+        "AzureServicesAuthConnectionString": "RunAs=Developer;DeveloperTool=AzureCli"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7181"
-    }    
+    }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json"
 }
