@@ -8,6 +8,7 @@ param applicationInsightsName string = ''
 param appServicePlanId string
 param keyVaultName string = ''
 param managedIdentity bool = !empty(keyVaultName)
+param userIdentity object = {}
 
 // Runtime Properties
 @allowed([
@@ -43,7 +44,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
   tags: tags
   kind: kind
   properties: {
-    serverFarmId: appServicePlanId
+    serverFarmId: appServicePlanId    
     siteConfig: {
       linuxFxVersion: linuxFxVersion
       alwaysOn: alwaysOn
@@ -57,13 +58,14 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
       healthCheckPath: healthCheckPath
       cors: {
         allowedOrigins: union([ 'https://portal.azure.com', 'https://ms.portal.azure.com' ], allowedOrigins)
-      }
+      }      
     }
     clientAffinityEnabled: clientAffinityEnabled
     httpsOnly: true
   }
 
-  identity: { type: managedIdentity ? 'SystemAssigned' : 'None' }
+  identity: managedIdentity ? { type: 'SystemAssigned' } 
+    : (!empty(userIdentity)) ? userIdentity : { type: 'None' }
 
   resource basicPublishingCredentialsPoliciesFtp 'basicPublishingCredentialsPolicies' = {
     name: 'ftp'
