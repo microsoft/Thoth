@@ -21,6 +21,7 @@ builder.Services.AddSpeechRecognitionServices();
 builder.Services.AddSingleton<ITextToSpeechPreferencesListener, TextToSpeechPreferencesListenerService>();
 builder.Services.AddMudServices();
 builder.Services.AddTransient<IPdfViewer, WebPdfViewer>();
+builder.Services.AddSingleton<ChatHistoryService>();
 
 await JSHost.ImportAsync(
     moduleName: nameof(JavaScriptModule),
