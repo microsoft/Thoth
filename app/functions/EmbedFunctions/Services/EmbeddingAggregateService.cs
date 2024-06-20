@@ -51,6 +51,23 @@ public sealed class EmbeddingAggregateService(
                     [nameof(EmbeddingType)] = embeddingType.ToString()
                 });
             }
+            else if (Path.GetExtension(blobName) is ".docx")
+            {
+                logger.LogInformation("Embedding docx: {Name}", blobName);
+                var result = await embedService.EmbedPDFBlobAsync(blobStream, blobName);
+
+                var status = result switch
+                {
+                    true => DocumentProcessingStatus.Succeeded,
+                    _ => DocumentProcessingStatus.Failed
+                };
+
+                await corpusClient.SetMetadataAsync(new Dictionary<string, string>
+                {
+                    [nameof(DocumentProcessingStatus)] = status.ToString(),
+                    [nameof(EmbeddingType)] = embeddingType.ToString()
+                });
+            }
             else
             {
                 throw new NotSupportedException("Unsupported file type.");

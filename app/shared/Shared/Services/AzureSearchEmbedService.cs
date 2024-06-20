@@ -4,8 +4,11 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using Azure;
-using Azure.AI.FormRecognizer.DocumentAnalysis;
+using Azure.AI.DocumentIntelligence;
+//using Azure.AI.FormRecognizer.DocumentAnalysis;
+
 using Azure.AI.OpenAI;
+using Azure.Core;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
@@ -21,7 +24,8 @@ public sealed partial class AzureSearchEmbedService(
     SearchClient searchClient,
     string searchIndexName,
     SearchIndexClient searchIndexClient,
-    DocumentAnalysisClient documentAnalysisClient,
+    DocumentIntelligenceClient documentIntelligenceClient,
+    //DocumentAnalysisClient documentAnalysisClient,
     BlobContainerClient corpusContainerClient,
     IComputerVisionService? computerVisionService = null,
     bool includeImageEmbeddingsField = false,
@@ -199,9 +203,14 @@ public sealed partial class AzureSearchEmbedService(
         using var ms = new MemoryStream();
         blobStream.CopyTo(ms);
         ms.Position = 0;
-        AnalyzeDocumentOperation operation = documentAnalysisClient.AnalyzeDocument(
-            WaitUntil.Started, "prebuilt-layout", ms);
+        //AnalyzeDocumentOperation operation = documentAnalysisClient.AnalyzeDocument(
+        //    WaitUntil.Started, "prebuilt-layout", ms);
+        AnalyzeDocumentContent analyzeRequest = new AnalyzeDocumentContent
+        {
+            Base64Source = BinaryData.FromStream(ms)
+        };
 
+        var operation = documentIntelligenceClient.AnalyzeDocument(WaitUntil.Started, "prebuilt-layout", analyzeRequest);
         var offset = 0;
         List<PageDetail> pageMap = [];
 
@@ -213,7 +222,7 @@ public sealed partial class AzureSearchEmbedService(
                 results.Value.Tables.Where(t => t.BoundingRegions[0].PageNumber == i + 1).ToList();
 
             // Mark all positions of the table spans in the page
-            int pageIndex = pages[i].Spans[0].Index;
+            int pageIndex = pages[i].Spans[0].Offset;
             int pageLength = pages[i].Spans[0].Length;
             int[] tableChars = Enumerable.Repeat(-1, pageLength).ToArray();
             for (var tableId = 0; tableId < tablesOnPage.Count; tableId++)
@@ -223,7 +232,7 @@ public sealed partial class AzureSearchEmbedService(
                     // Replace all table spans with "tableId" in tableChars array
                     for (var j = 0; j < span.Length; j++)
                     {
-                        int index = span.Index - pageIndex + j;
+                        int index = span.Offset - pageIndex + j;
                         if (index >= 0 && index < pageLength)
                         {
                             tableChars[index] = tableId;
