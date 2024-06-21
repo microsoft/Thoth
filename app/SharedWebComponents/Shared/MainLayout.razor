@@ -68,7 +68,7 @@
             </MudDrawerHeader>
             <MudDivider Style="flex-grow: 0;" />
             <MudList Clickable="true" Dense="true">
-                @foreach (var chat in _chatHistoryService.GetChatHistorySessions())
+                @foreach (var chat in _chatHistoryService.GetChatHistorySessions().OrderByDescending(c => c.EndTime))
                 {
                     <MudListItem OnClick="@(e => OnItemClick(e, chat.Id))">
                         <div class="d-flex justify-space-between">
