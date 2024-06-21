@@ -26,9 +26,9 @@ public class ChatHistoryService
         NotifyStateChanged();
     }
 
-    public ChatHistorySession GetChatHistorySession(int sessionId)
+    public bool TryGetChatHistorySession(int sessionId, out ChatHistorySession chatHistorySession)
     {
-        return _chatHistorySessions[sessionId];
+        return _chatHistorySessions.TryGetValue(sessionId, out chatHistorySession);
     }
 
     public IEnumerable<ChatHistorySession> GetChatHistorySessions()

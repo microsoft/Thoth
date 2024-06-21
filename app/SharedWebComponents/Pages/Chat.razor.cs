@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using static System.Net.WebRequestMethods;
-
 namespace SharedWebComponents.Pages;
 
 public sealed partial class Chat
@@ -30,7 +28,7 @@ public sealed partial class Chat
     }
 
     [Parameter]
-    [SupplyParameterFromQuery(Name="chatId")]
+    [SupplyParameterFromQuery(Name = "chatId")]
     public string ChatSessionId { get; set; }
     [Inject]
     internal ChatHistoryService ChatHistoryService { get; set; }
@@ -47,9 +45,10 @@ public sealed partial class Chat
             return;
         }
 
-        var chatHistorySession = ChatHistoryService.GetChatHistorySession(chatSessionId);
-
-        _questionAndAnswerMap = chatHistorySession.QuestionAnswerMap;
+        if (ChatHistoryService.TryGetChatHistorySession(chatSessionId, out var chatHistorySession))
+        {
+            _questionAndAnswerMap = chatHistorySession.QuestionAnswerMap;
+        }
     }
 
     private async Task OnAskClickedAsync()
@@ -67,7 +66,7 @@ public sealed partial class Chat
         try
         {
             var history = _questionAndAnswerMap
-                .Where(x => x.Value?.Choices is { Length: > 0})
+                .Where(x => x.Value?.Choices is { Length: > 0 })
                 .SelectMany(x => new ChatMessage[] { new ChatMessage("user", x.Key.Question), new ChatMessage("assistant", x.Value!.Choices[0].Message.Content) })
                 .ToList();
 
