@@ -2,8 +2,8 @@
 
 internal static partial class Program
 {
-    private static readonly Argument<string> s_files =
-        new(name: "files", description: "Files to be processed");
+    //private static readonly Argument<string> s_files =
+    //    new(name: "files", description: "Files to be processed");
 
     private static readonly Option<string> s_category =
         new(name: "--category", description: "Value for the category field in the search index for all sections indexed in this run");
@@ -52,8 +52,7 @@ internal static partial class Program
         Prepare documents by extracting content from PDFs, splitting content into sections,
         uploading to blob storage, and indexing in a search index.
         """)
-        {
-            s_files,
+        {            
             s_category,
             s_skipBlobs,
             s_storageEndpoint,
@@ -71,7 +70,6 @@ internal static partial class Program
         };
 
     private static AppOptions GetParsedAppOptions(InvocationContext context) => new(
-            Files: context.ParseResult.GetValueForArgument(s_files),
             Category: context.ParseResult.GetValueForOption(s_category),
             SkipBlobs: context.ParseResult.GetValueForOption(s_skipBlobs),
             StorageServiceBlobEndpoint: context.ParseResult.GetValueForOption(s_storageEndpoint),
