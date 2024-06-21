@@ -58,7 +58,7 @@ public sealed partial class MainLayout
 
     protected void OnItemClick(EventArgs e, int chatId)
     {
-        _navigationManager.NavigateTo($"/chat?chatId={chatId}");
+        _navigationManager.NavigateTo($"/chat?{nameof(ChatHistorySession.Id)}={chatId}");
     }
 
     protected void OnDeleteSessionClick(EventArgs e, int chatId)

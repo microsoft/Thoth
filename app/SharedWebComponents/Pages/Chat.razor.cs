@@ -32,7 +32,7 @@ public sealed partial class Chat
     }
 
     [Parameter]
-    [SupplyParameterFromQuery(Name = "chatId")]
+    [SupplyParameterFromQuery(Name = nameof(ChatHistorySession.Id))]
     public string ChatSessionId { get; set; }
     [Inject]
     internal ChatHistoryService ChatHistoryService { get; set; }
@@ -59,7 +59,7 @@ public sealed partial class Chat
         Console.WriteLine("Loading chat history from query param");
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
 
-        if (!QueryHelpers.ParseQuery(uri.Query).TryGetValue("chatId", out var ChatSessionId))
+        if (!QueryHelpers.ParseQuery(uri.Query).TryGetValue(nameof(ChatHistorySession.Id), out var ChatSessionId))
         {
             return;
         }
@@ -132,7 +132,7 @@ public sealed partial class Chat
     {
         var newChatHistorySession = ChatHistoryService.AddChatHistorySession(_questionAndAnswerMap);
 
-        NavigationManager.NavigateTo($"/chat?chatId={newChatHistorySession.Id}");
+        NavigationManager.NavigateTo($"/chat?{nameof(ChatHistorySession.Id)}={newChatHistorySession.Id}");
     }
 
     private void OnClearChat()
