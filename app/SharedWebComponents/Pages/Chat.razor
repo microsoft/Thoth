@@ -6,7 +6,7 @@
 
 <MudGrid Justify="Justify.Center">
     <MudItem id="answers" xs="12" Class="overflow-x-auto">
-        @if (_questionAndAnswerMap is { Count: 0 })
+        @if (!_questionAndAnswerMap.Any())
         {
             <div class="d-flex align-content-center flex-wrap flex-grow-1 full-height">
                 <Examples Message="Chat with your data" OnExampleClicked="@OnAskQuestionAsync" />
@@ -86,7 +86,7 @@
                             <MudFab Color="Color.Primary" Size="Size.Medium"
                                     StartIcon=@Icons.Material.Filled.Save
                                     aria-label="Save chat."
-                                    OnClick="@OnSaveChat" Disabled=@(_isReceivingResponse || _questionAndAnswerMap is { Count: 0 }) />
+                                    OnClick="@OnSaveChat" Disabled=@(!string.IsNullOrWhiteSpace(ChatSessionId) || _isReceivingResponse || _questionAndAnswerMap is { Count: 0 }) />
                         </MudTooltip>
                     </MudItem>
 
