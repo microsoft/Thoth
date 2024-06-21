@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.AspNetCore.WebUtilities;
+using System;
+
 namespace SharedWebComponents.Pages;
 
 public sealed partial class Chat
@@ -12,6 +15,7 @@ public sealed partial class Chat
     private Dictionary<UserQuestion, ChatAppResponseOrError?> _questionAndAnswerMap = [];
 
     [Inject] public required ISessionStorageService SessionStorage { get; set; }
+    [Inject] public required NavigationManager NavigationManager { get; set; }
 
     [Inject] public required ApiClient ApiClient { get; set; }
 
@@ -33,21 +37,57 @@ public sealed partial class Chat
     [Inject]
     internal ChatHistoryService ChatHistoryService { get; set; }
 
+    protected override void OnInitialized()
+    {
+        LoadChatHistoryFromQueryParam();
+        NavigationManager.LocationChanged += HandleLocationChanged;
+    }
+
     protected override async Task OnParametersSetAsync()
     {
+        LoadChatHistoryFromQueryParam();
+    }
+
+    protected void HandleLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        LoadChatHistoryFromQueryParam();
+        StateHasChanged();
+    }
+
+    private void LoadChatHistoryFromQueryParam()
+    {
+        Console.WriteLine("Loading chat history from query param");
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+
+        if (!QueryHelpers.ParseQuery(uri.Query).TryGetValue("chatId", out var ChatSessionId))
+        {
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(ChatSessionId))
         {
             return;
         }
 
+        Console.WriteLine($"ChatSessionId: {ChatSessionId}");
+
         if (!int.TryParse(ChatSessionId, out int chatSessionId))
         {
+            
             return;
         }
 
+        Console.WriteLine($"chatSessionId: {chatSessionId}");
+
+
         if (ChatHistoryService.TryGetChatHistorySession(chatSessionId, out var chatHistorySession))
         {
+            Console.WriteLine($"Replacing ChatHistorySession");
             _questionAndAnswerMap = chatHistorySession.QuestionAnswerMap;
+        }
+        else
+        {
+            _questionAndAnswerMap = [];
         }
     }
 
@@ -90,11 +130,15 @@ public sealed partial class Chat
 
     private void OnSaveChat()
     {
-        ChatHistoryService.AddChatHistorySession(_questionAndAnswerMap);
+        var newChatHistorySession = ChatHistoryService.AddChatHistorySession(_questionAndAnswerMap);
+
+        NavigationManager.NavigateTo($"/chat?chatId={newChatHistorySession.Id}");
     }
 
     private void OnClearChat()
     {
+        NavigationManager.NavigateTo("/chat");
+        ChatSessionId = null;
         _userQuestion = _lastReferenceQuestion = "";
         _currentQuestion = default;
         _questionAndAnswerMap.Clear();

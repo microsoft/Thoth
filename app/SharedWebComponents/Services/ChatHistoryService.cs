@@ -16,7 +16,7 @@ public class ChatHistoryService
 
     private void NotifyStateChanged() => OnChange?.Invoke();
 
-    public void AddChatHistorySession(Dictionary<UserQuestion, ChatAppResponseOrError?> questionAnswerMap)
+    public ChatHistorySession AddChatHistorySession(Dictionary<UserQuestion, ChatAppResponseOrError?> questionAnswerMap)
     {
         var sessionId = _chatHistorySessions.Keys.Any() ? _chatHistorySessions.Keys.Max() + 1 : 1;
         // todo: generate sessionName, sessionStartTime, sessionEndTime
@@ -24,6 +24,7 @@ public class ChatHistoryService
         var chatHistorySession = new ChatHistorySession(sessionId, sessionName, DateTime.Now, DateTime.Now, questionAnswerMap);
         _chatHistorySessions.Add(sessionId, chatHistorySession);
         NotifyStateChanged();
+        return chatHistorySession;
     }
 
     public bool TryGetChatHistorySession(int sessionId, out ChatHistorySession chatHistorySession)
