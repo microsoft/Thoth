@@ -65,6 +65,21 @@ public sealed partial class MainLayout
     {
         _chatHistoryService.DeleteChatHistorySession(chatId);
     }
+
+    protected override void OnInitialized()
+    {
+        _chatHistoryService.OnChange += OnChangeHandlerAsync;
+    }
+
+    public void Dispose()
+    {
+        _chatHistoryService.OnChange -= OnChangeHandlerAsync;
+    }
+
+    private async void OnChangeHandlerAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
 }
 
 public record Chat(string Name, int Id, DateTime TimeStamp);
