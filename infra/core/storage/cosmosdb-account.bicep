@@ -21,37 +21,15 @@ resource databaseAccounts_cosmos_thoth_name_resource 'Microsoft.DocumentDB/datab
     'hidden-cosmos-mmspecial': ''
   }
   kind: kind
-  identity: {
-    type: 'None'
-  }
-  properties: {
-    publicNetworkAccess: publicNetworkAccess
+  properties: {    
     enableAutomaticFailover: false
-    enableMultipleWriteLocations: false
-    isVirtualNetworkFilterEnabled: false
-    virtualNetworkRules: []
-    disableKeyBasedMetadataWriteAccess: false
-    enableFreeTier: false
-    enableAnalyticalStorage: false
-    analyticalStorageConfiguration: {
-      schemaType: schemaType
-    }
-    databaseAccountOfferType: 'Standard'
-    enableMaterializedViews: false
-    defaultIdentity: 'FirstPartyIdentity'
-    networkAclBypass: 'None'
-    disableLocalAuth: false
-    enablePartitionMerge: false
-    enablePerRegionPerPartitionAutoscale: false
-    enableBurstCapacity: false
-    enablePriorityBasedExecution: true
-    defaultPriorityLevel: 'Off'
-    minimalTlsVersion: minimalTlsVersion
+    enableMultipleWriteLocations: false  
     consistencyPolicy: {
       defaultConsistencyLevel: defaultConsistencyLevel
       maxIntervalInSeconds: maxIntervalInSeconds
       maxStalenessPrefix: maxStalenessPrefix
     }
+    databaseAccountOfferType: 'Standard'
     locations: [
       {
         locationName: location
@@ -59,25 +37,12 @@ resource databaseAccounts_cosmos_thoth_name_resource 'Microsoft.DocumentDB/datab
         isZoneRedundant: false
       }
     ]
-    cors: []
+    disableLocalAuth: false
     capabilities: enableServerless ? [
       {
         name: 'EnableServerless'
       }
     ] : []
-    ipRules: []
-    backupPolicy: {
-      type: 'Periodic'
-      periodicModeProperties: {
-        backupIntervalInMinutes: 240
-        backupRetentionIntervalInHours: 8
-        backupStorageRedundancy: 'Geo'
-      }
-    }
-    networkAclBypassResourceIds: []
-    diagnosticLogSettings: {
-      enableFullTextQuery: 'None'
-    }
   }
 }
 
