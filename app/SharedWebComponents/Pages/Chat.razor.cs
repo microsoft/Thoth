@@ -16,6 +16,7 @@ public sealed partial class Chat
 
     [Inject] public required ISessionStorageService SessionStorage { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
+    [Inject] public required PinnedQueriesService PinnedQueriesService { get; set; }
 
     [Inject] public required ApiClient ApiClient { get; set; }
 
@@ -131,13 +132,44 @@ public sealed partial class Chat
         }
     }
 
+
+    public string PinIcon(string question)
+    {
+        return PinnedQueriesService.GetPinnedQueries().Any(q => string.Equals(q.Question, question, StringComparison.InvariantCultureIgnoreCase))
+            ? Icons.Material.Filled.PushPin
+            : Icons.Material.Outlined.PushPin;
+    }
+
     private void OnSaveChat()
     {
         var newChatHistorySession = ChatHistoryService.AddChatHistorySession(_questionAndAnswerMap);
 
         ChatSessionId = newChatHistorySession.Id.ToString();
         NavigationManager.NavigateTo($"/chat?{nameof(ChatHistorySession.Id)}={newChatHistorySession.Id}");
-        //LoadChatHistoryFromQueryParam();
+    }
+
+    private void OnPinQuestion(string question, DateTime askedOn)
+    {
+
+        var pinnedq = PinnedQueriesService
+            .GetPinnedQueries()
+            .FirstOrDefault(q => string.Equals(q.Question, question, StringComparison.InvariantCultureIgnoreCase));
+
+        Console.WriteLine(pinnedq.Question ?? "No questions here :D");
+
+        if (PinnedQueriesService
+            .GetPinnedQueries()
+            .Any(q => string.Equals(q.Question, question, StringComparison.InvariantCultureIgnoreCase)))
+        {
+            PinnedQueriesService.DeletePinnedQuery(question);
+        }
+        else
+        {
+            var userQuestion = new UserQuestion(question, DateTime.Now);
+            PinnedQueriesService.AddPinnedQuery(userQuestion);
+        }
+
+        StateHasChanged();
     }
 
     private void OnClearChat()
