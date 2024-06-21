@@ -417,9 +417,8 @@ module database 'core/storage/cosmosdb-account.bicep' = {
   name: 'database'
   scope: storageResourceGroup
   params: {
-    accountName: !empty(cosmosDbAccountName) ? cosmosDbAccountName : '${abbreviations.documentDBDatabaseAccounts}-${resourceToken}'
+    accountName: !empty(cosmosDbAccountName) ? cosmosDbAccountName : '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
     location: location
-    tags: tags
   }
 }
 

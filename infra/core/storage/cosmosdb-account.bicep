@@ -1,10 +1,10 @@
 metadata description = 'Creates a Cosmos DB account with a SQL API database and container.'
-param databaseAccounts_cosmos_thoth_name string = 'cosmos-thoth'
+param accountName string = 'cosmosthoth'
 param databaseName string = 'ToDoList'
 param defaultExperience string = 'Core (SQL)'
 param kind string = 'GlobalDocumentDB'
 @allowed([ 'Enabled', 'Disabled' ])
-param publicNetworkAccess string = 'Enabled'
+param publicNetworkAccess string = 'Disabled'
 param location string = resourceGroup().location
 param minimalTlsVersion string = 'Tls12'
 param defaultConsistencyLevel string = 'Session'
@@ -14,7 +14,7 @@ param enableServerless bool = true
 param schemaType string = 'WellDefined'
 
 resource databaseAccounts_cosmos_thoth_name_resource 'Microsoft.DocumentDB/databaseAccounts@2024-02-15-preview' = {
-  name: databaseAccounts_cosmos_thoth_name
+  name: accountName
   location: location
   tags: {
     defaultExperience: defaultExperience
@@ -44,8 +44,8 @@ resource databaseAccounts_cosmos_thoth_name_resource 'Microsoft.DocumentDB/datab
     enablePartitionMerge: false
     enablePerRegionPerPartitionAutoscale: false
     enableBurstCapacity: false
-    enablePriorityBasedExecution: false
-    defaultPriorityLevel: 'High'
+    enablePriorityBasedExecution: true
+    defaultPriorityLevel: 'Off'
     minimalTlsVersion: minimalTlsVersion
     consistencyPolicy: {
       defaultConsistencyLevel: defaultConsistencyLevel
@@ -137,7 +137,7 @@ resource databaseAccounts_cosmos_thoth_name_00000000_0000_0000_0000_000000000002
 }
 
 resource databaseAccounts_cosmos_thoth_name_ToDoList_Items 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-02-15-preview' = {
-  parent: databaseAccounts_cosmos_thoth_name_ToDoList
+  parent: databaseAccounts_cosmos_thoth_name_Database001
   name: 'Items'
   properties: {
     resource: {
