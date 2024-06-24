@@ -3,7 +3,6 @@
 namespace PrepareDocs;
 
 internal record class AppOptions(
-    string Files,
     string? Category,
     bool SkipBlobs,
     string? StorageServiceBlobEndpoint,

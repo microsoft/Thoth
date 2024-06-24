@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "type": "completion",
+  "description": "Processes a document to respond user's questions.",
+  "execution_settings": {
+    "default": {
+      "max_tokens": 5000,
+      "temperature": 0.5
+    },
+    "gpt-4o": {
+      "model_id": "2024-05-13",
+      "max_tokens": 8000,
+      "temperature": 0.3
+    }
+  },
+  "input_variables": [
+    {
+      "name": "$documentContents",
+      "description": "The document's content'.",
+      "required": true
+    }
+  ]
+}

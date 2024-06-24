@@ -139,6 +139,9 @@ param openAiChatGptDeployment string
 @description('OpenAI Embedding Model')
 param openAiEmbeddingDeployment string
 
+@description('CosmosDB Account Name')
+param cosmosDbAccountName string = ''
+
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 
@@ -407,6 +410,15 @@ module storage 'core/storage/storage-account.bicep' = {
         publicAccess: 'Blob'
       }
     ]
+  }
+}
+
+module database 'core/storage/cosmosdb-account.bicep' = {
+  name: 'database'
+  scope: storageResourceGroup
+  params: {
+    accountName: !empty(cosmosDbAccountName) ? cosmosDbAccountName : '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
+    location: location
   }
 }
 
