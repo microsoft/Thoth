@@ -24,8 +24,10 @@ s_rootCommand.SetHandler(
             .Select(i => ProcessSingleFileAsync(options, i, embedService))
             .Chunk(options.BatchSize);
 
-            foreach (var task in taskChunks)
+            foreach (var (task, i) in taskChunks.Select((c, i) => (c, i)))
             {
+                Console.WriteLine($"Executing batch {i} of {taskChunks.Count()}");
+
                 await Task.WhenAll(task);
 
                 await Task.Delay(TimeSpan.FromSeconds(options.WaitTime));
