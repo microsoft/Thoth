@@ -10,7 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.AI.DocumentIntelligence" />
-    <PackageReference Include="Azure.AI.FormRecognizer" />
     <PackageReference Include="Azure.Search.Documents" />
     <PackageReference Include="Azure.Storage.Blobs" />
     <PackageReference Include="Azure.AI.OpenAI" />
