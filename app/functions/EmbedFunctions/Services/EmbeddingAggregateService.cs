@@ -34,27 +34,10 @@ public sealed class EmbeddingAggregateService(
                     [nameof(EmbeddingType)] = embeddingType.ToString()
                 });
             }
-            else if (Path.GetExtension(blobName) is ".pdf")
+            else if (Path.GetExtension(blobName) is ".pdf" or ".docx" or ".pptx" or ".xlsx" or "html")
             {
-                logger.LogInformation("Embedding pdf: {Name}", blobName);
-                var result = await embedService.EmbedPDFBlobAsync(blobStream, blobName);
-
-                var status = result switch
-                {
-                    true => DocumentProcessingStatus.Succeeded,
-                    _ => DocumentProcessingStatus.Failed
-                };
-
-                await corpusClient.SetMetadataAsync(new Dictionary<string, string>
-                {
-                    [nameof(DocumentProcessingStatus)] = status.ToString(),
-                    [nameof(EmbeddingType)] = embeddingType.ToString()
-                });
-            }
-            else if (Path.GetExtension(blobName) is ".docx")
-            {
-                logger.LogInformation("Embedding docx: {Name}", blobName);
-                var result = await embedService.EmbedPDFBlobAsync(blobStream, blobName);
+                logger.LogInformation($"Embedding {Path.GetExtension(blobName)}: {blobName}");
+                var result = await embedService.EmbedDocumentBlobAsync(blobStream, blobName);
 
                 var status = result switch
                 {

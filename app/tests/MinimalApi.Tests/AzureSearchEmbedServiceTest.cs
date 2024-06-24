@@ -230,7 +230,7 @@ public class AzureSearchEmbedServiceTest
             var benefitOptionsPDFName = "Benefit_Options.pdf";
             var benefitOptionsPDFPath = Path.Combine("data", benefitOptionsPDFName);
             using var stream = File.OpenRead(benefitOptionsPDFPath);
-            var isSucceed = await service.EmbedPDFBlobAsync(stream, benefitOptionsPDFName);
+            var isSucceed = await service.EmbedDocumentBlobAsync(stream, benefitOptionsPDFName);
             isSucceed.Should().BeTrue();
 
             // check if the document page is uploaded to blob

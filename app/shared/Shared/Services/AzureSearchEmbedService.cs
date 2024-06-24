@@ -34,7 +34,7 @@ public sealed partial class AzureSearchEmbedService(
     [GeneratedRegex("[^0-9a-zA-Z_-]")]
     private static partial Regex MatchInSetRegex();
 
-    public async Task<bool> EmbedPDFBlobAsync(Stream pdfBlobStream, string blobName)
+    public async Task<bool> EmbedDocumentBlobAsync(Stream pdfBlobStream, string blobName)
     {
         try
         {
@@ -204,8 +204,6 @@ public sealed partial class AzureSearchEmbedService(
         blobStream.Position = 0;
         await blobStream.CopyToAsync(ms);
         ms.Position = 0;
-        //AnalyzeDocumentOperation operation = documentAnalysisClient.AnalyzeDocument(
-        //    WaitUntil.Started, "prebuilt-layout", ms);
         AnalyzeDocumentContent analyzeRequest = new AnalyzeDocumentContent
         {
             Base64Source = BinaryData.FromStream(ms)
@@ -219,8 +217,17 @@ public sealed partial class AzureSearchEmbedService(
         var pages = results.Value.Pages;
         for (var i = 0; i < pages.Count; i++)
         {
-            IReadOnlyList<DocumentTable> tablesOnPage =
-                results.Value.Tables.Where(t => t.BoundingRegions[0].PageNumber == i + 1).ToList();
+            IReadOnlyList<DocumentTable> tablesOnPage;
+            if (results.Value.Tables.Any(t => t.BoundingRegions == null || !t.BoundingRegions.Any()))
+            {
+                tablesOnPage = results.Value.Tables.ToList(); 
+            }
+            else
+            {
+                tablesOnPage = results.Value.Tables
+                    .Where(t => t.BoundingRegions[0].PageNumber == i + 1).ToList();
+            }
+
 
             // Mark all positions of the table spans in the page
             int pageIndex = pages[i].Spans[0].Offset;
