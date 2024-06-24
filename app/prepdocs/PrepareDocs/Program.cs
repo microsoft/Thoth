@@ -28,7 +28,22 @@ s_rootCommand.SetHandler(
             {
                 Console.WriteLine($"Executing batch {i} of {taskChunks.Count()}");
 
-                await Task.WhenAll(task);
+                var aggregateTask = Task.WhenAll(task);
+
+                try
+                {
+                    await aggregateTask;
+
+                }
+                catch (Exception)
+                {
+                    // waits until aggregate exception collected to throw final exception
+                    if (aggregateTask.Exception != null)
+                    {
+                        // may need to introduce better logging here
+                        throw aggregateTask.Exception;
+                    }
+                }
 
                 await Task.Delay(TimeSpan.FromSeconds(options.WaitTime));
             }
