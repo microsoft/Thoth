@@ -22,8 +22,6 @@ global using System.Text;
 global using System.Text.Json;
 global using System.Text.Json.Serialization;
 global using System.Text.RegularExpressions;
-global using ClientApp.Components;
-global using ClientApp.Extensions;
 global using ClientApp.Models;
 global using Markdig;
 global using Microsoft.Extensions.Logging;

@@ -34,7 +34,7 @@ public sealed partial class Chat
     }
 
     [Parameter]
-    [SupplyParameterFromQuery(Name = nameof(ChatHistorySession.SessionId))]
+    [SupplyParameterFromQuery(Name = nameof(ChatHistorySession.Id))]
     public string? ChatSessionId { get; set; }
     [Inject]
     internal ChatHistoryService ChatHistoryService { get; set; }
@@ -60,7 +60,7 @@ public sealed partial class Chat
         Console.WriteLine("Loading chat history from query param");
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
 
-        if (!QueryHelpers.ParseQuery(uri.Query).TryGetValue(nameof(ChatHistorySession.Id), out var ChatSessionId))
+        if (!QueryHelpers.ParseQuery(uri.Query).TryGetValue(nameof(ChatHistorySession.SessionId), out var ChatSessionId))
         {
             return;
         }
@@ -72,16 +72,8 @@ public sealed partial class Chat
 
         Console.WriteLine($"ChatSessionId: {ChatSessionId}");
 
-        if (!int.TryParse(ChatSessionId, out int chatSessionId))
-        {
 
-            return;
-        }
-
-        Console.WriteLine($"chatSessionId: {chatSessionId}");
-
-
-        if (ChatHistoryService.TryGetChatHistorySession(chatSessionId, out var chatHistorySession))
+        if (ChatHistoryService.TryGetChatHistorySession(ChatSessionId, out var chatHistorySession))
         {
             Console.WriteLine($"Replacing ChatHistorySession");
             _questionAndAnswerMap = [];
@@ -147,8 +139,8 @@ public sealed partial class Chat
     {
         var newChatHistorySession = ChatHistoryService.AddChatHistorySession(_questionAndAnswerMap);
 
-        ChatSessionId = newChatHistorySession.Id.ToString();
-        NavigationManager.NavigateTo($"/chat?{nameof(ChatHistorySession.Id)}={newChatHistorySession.Id}");
+        ChatSessionId = newChatHistorySession.SessionId;
+        NavigationManager.NavigateTo($"/chat?{nameof(ChatHistorySession.SessionId)}={newChatHistorySession.SessionId}");
     }
 
     private void OnPinQuestion(string question, DateTime askedOn)

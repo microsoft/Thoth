@@ -41,7 +41,6 @@ public sealed partial class Index : IDisposable
         _images.Enqueue(new("_content/ClientApp/media/bing-create-9.jpg", "Artificial intelligence, geometric art, bright and vivid"));
         _images.Enqueue(new("_content/ClientApp/media/bing-create-10.jpg", "Old 1950s computer on pick background, retro futurism"));
 
-        _ = UpdateImageAsync();
     }
 
     public void Dispose()
@@ -50,26 +49,7 @@ public sealed partial class Index : IDisposable
         _cancellation.Dispose();
         _timer.Dispose();
     }
-
-    private async Task UpdateImageAsync()
-    {
-        do
-        {
-            var prompt = _prompts[_currentPrompt++ % _prompts.Length];
-            var images = await Client.RequestImageAsync(new PromptRequest { Prompt = prompt });
-            if (images is { ImageUrls.Count: > 0 })
-            {
-                foreach (var image in images.ImageUrls)
-                {
-                    _ = _images.Dequeue();
-                    _images.Enqueue(new Image(image.ToString(), prompt));
-                }
-
-                await InvokeAsync(StateHasChanged);
-            }
-        }
-        while (await _timer.WaitForNextTickAsync(_cancellation.Token));
-    }
+    
 }
 
 internal readonly record struct Image(string Src, string Alt);

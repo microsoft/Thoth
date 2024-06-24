@@ -6,65 +6,13 @@ namespace ClientApp.Services;
 
 public sealed class ApiClient(HttpClient httpClient)
 {
-    public async Task<ImageResponse?> RequestImageAsync(PromptRequest request)
-    {
-        var response = await httpClient.PostAsJsonAsync(
-            "api/images", request, SerializerOptions.Default);
-
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadFromJsonAsync<ImageResponse>();
-    }
-
     public async Task<bool> ShowLogoutButtonAsync()
     {
         var response = await httpClient.GetAsync("api/enableLogout");
         response.EnsureSuccessStatusCode();
 
         return await response.Content.ReadFromJsonAsync<bool>();
-    }
-
-    public async Task<UploadDocumentsResponse> UploadDocumentsAsync(
-        IReadOnlyList<IBrowserFile> files,
-        long maxAllowedSize,
-        string cookie)
-    {
-        try
-        {
-            using var content = new MultipartFormDataContent();
-
-            foreach (var file in files)
-            {
-                // max allow size: 10mb
-                var max_size = maxAllowedSize * 1024 * 1024;
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                var fileContent = new StreamContent(file.OpenReadStream(max_size));
-#pragma warning restore CA2000 // Dispose objects before losing scope
-                fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
-
-                content.Add(fileContent, file.Name, file.Name);
-            }
-
-            // set cookie
-            content.Headers.Add("X-CSRF-TOKEN-FORM", cookie);
-            content.Headers.Add("X-CSRF-TOKEN-HEADER", cookie);
-
-            var response = await httpClient.PostAsync("api/documents", content);
-
-            response.EnsureSuccessStatusCode();
-
-            var result =
-                await response.Content.ReadFromJsonAsync<UploadDocumentsResponse>();
-
-            return result
-                ?? UploadDocumentsResponse.FromError(
-                    "Unable to upload files, unknown error.");
-        }
-        catch (Exception ex)
-        {
-            return UploadDocumentsResponse.FromError(ex.ToString());
-        }
-    }
+    }    
 
     public async IAsyncEnumerable<DocumentResponse> GetDocumentsAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken)

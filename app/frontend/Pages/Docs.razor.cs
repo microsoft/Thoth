@@ -61,45 +61,7 @@ public sealed partial class Docs : IDisposable
             _isLoadingDocuments = false;
             StateHasChanged();
         }
-    }
-
-    private async Task SubmitFilesForUploadAsync()
-    {
-        if (_fileUpload is { Files.Count: > 0 })
-        {
-            var cookie = await JSRuntime.InvokeAsync<string>("getCookie", "XSRF-TOKEN");
-
-            var result = await Client.UploadDocumentsAsync(
-                _fileUpload.Files, MaxIndividualFileSize, cookie);
-
-            Logger.LogInformation("Result: {x}", result);
-
-            if (result.IsSuccessful)
-            {
-                Snackbar.Add(
-                    $"Uploaded {result.UploadedFiles.Length} documents.",
-                    Severity.Success,
-                    static options =>
-                    {
-                        options.ShowCloseIcon = true;
-                        options.VisibleStateDuration = 10_000;
-                    });
-
-                await _fileUpload.ResetAsync();
-            }
-            else
-            {
-                Snackbar.Add(
-                    result.Error,
-                    Severity.Error,
-                    static options =>
-                    {
-                        options.ShowCloseIcon = true;
-                        options.VisibleStateDuration = 10_000;
-                    });
-            }
-        }
-    }
+    }    
 
     private ValueTask OnShowDocumentAsync(DocumentResponse document) =>
         PdfViewer.ShowDocumentAsync(document.Name, document.Url.ToString());
