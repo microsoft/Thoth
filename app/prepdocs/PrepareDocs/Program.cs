@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics;
-using System.Linq;
-
 s_rootCommand.SetHandler(
     async (context) =>
     {
@@ -22,8 +19,39 @@ s_rootCommand.SetHandler(
 
             context.Console.WriteLine($"Processing {files.Count()} files...");
 
-            var tasks = files.ToList().Select(i => ProcessSingleFileAsync(options, i, embedService));
-            await Task.WhenAll(tasks);
+            // todo: throw wait time and chunk size into options
+            var taskChunks = files.ToList()
+            .Select(i => ProcessSingleFileAsync(options, i, embedService))
+            .Chunk(options.BatchSize);
+
+            var exceptions = new List<Exception>();
+
+            foreach (var (task, i) in taskChunks.Select((c, i) => (c, i)))
+            {
+                Console.WriteLine($"Executing batch {i} of {taskChunks.Count()}");
+
+                var aggregateTask = Task.WhenAll(task);
+
+                try
+                {
+                    await aggregateTask;
+                }
+                catch (Exception)
+                {
+                    // waits until aggregate exception collected to throw final exception
+                    if (aggregateTask.Exception != null)
+                    {
+                        // may need to introduce better logging here
+                        exceptions.Add(aggregateTask.Exception);
+                    }
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(options.WaitTime));
+            }
+
+            // may want to introduce better logging here
+            if (exceptions.Any())
+                throw new AggregateException(exceptions);
 
             static async Task ProcessSingleFileAsync(AppOptions options, string fileName, IEmbedService embedService)
             {

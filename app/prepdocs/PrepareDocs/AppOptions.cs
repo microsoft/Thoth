@@ -17,6 +17,8 @@ internal record class AppOptions(
     string? FormRecognizerServiceEndpoint,
     string? ComputerVisionServiceEndpoint,
     bool Verbose,
-    IConsole Console) : AppConsole(Console);
+    IConsole Console,
+    int BatchSize = 25,
+    int WaitTime = 30) : AppConsole(Console);
 
 internal record class AppConsole(IConsole Console);

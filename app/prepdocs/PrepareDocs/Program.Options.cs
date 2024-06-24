@@ -47,6 +47,12 @@ internal static partial class Program
     private static readonly Option<bool> s_verbose =
        new(aliases: new[] { "--verbose", "-v" }, description: "Verbose output");
 
+    private static readonly Option<int> s_batchSize =
+        new("--batchsize", "Number of files to process in parallel");
+
+    private static readonly Option<int> s_waitTime =
+        new("--waittime", "Time to wait between batches in seconds");
+
     private static readonly RootCommand s_rootCommand =
         new(description: """
         Prepare documents by extracting content from PDFs, splitting content into sections,
@@ -84,5 +90,7 @@ internal static partial class Program
             FormRecognizerServiceEndpoint: context.ParseResult.GetValueForOption(s_formRecognizerServiceEndpoint),
             ComputerVisionServiceEndpoint: context.ParseResult.GetValueForOption(s_computerVisionServiceEndpoint),
             Verbose: context.ParseResult.GetValueForOption(s_verbose),
-            Console: context.Console);
+            Console: context.Console,
+            BatchSize: context.ParseResult.GetValueForOption(s_batchSize),
+            WaitTime: context.ParseResult.GetValueForOption(s_waitTime));
 }
