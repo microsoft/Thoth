@@ -8,9 +8,4 @@ public interface ISearchService
                RequestOverrides? overrides = null,
                CancellationToken cancellationToken = default);
 
-    Task<SupportingImageRecord[]> QueryImagesAsync(
-               string? query = null,
-               float[]? embedding = null,
-               RequestOverrides? overrides = null,
-               CancellationToken cancellationToken = default);
 }

@@ -13,16 +13,7 @@ public interface IEmbedService
     /// </returns>
     Task<bool> EmbedPDFBlobAsync(
         Stream blobStream,
-        string blobName);
-
-    /// <summary>
-    /// Embeds the given image blob into the embedding service.
-    /// </summary>
-    Task<bool> EmbedImageBlobAsync(
-        Stream imageStream,
-        string imageUrl,
-        string imageName,
-        CancellationToken ct = default);
+        string blobName);    
 
     Task CreateSearchIndexAsync(string searchIndexName, CancellationToken ct = default);
 
