@@ -9,6 +9,9 @@
     <UserSecretsId>feba7d78-952f-423c-95ed-d6a4051dd15f</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="local.settings.json" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Azure.AI.DocumentIntelligence" />
     <PackageReference Include="Azure.Search.Documents" />
     <PackageReference Include="Azure.Storage.Blobs" />
