@@ -5,10 +5,8 @@
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
-using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Identity;
-using Azure.Search.Documents;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -49,15 +47,17 @@ public class ChatHistoryService : IChatHistoryService
         await _textMemory.SaveInformationAsync(s_collection, chatHistory.SessionId.ToString(), jsonHistory);
     }
 
-    public async Task DeleteChatHistorySession(int sessionId)
+    public async Task DeleteChatHistorySession(string sessionId)
     {
         await _textMemory.RemoveAsync(s_collection, sessionId.ToString());
     }
 
-    public async Task<ChatHistorySession> GetChatHistorySession(int sessionId)
+    public async Task<ChatHistorySession> GetChatHistorySession(string sessionId)
     {
-        var lookup = await _textMemory.GetAsync(s_collection, sessionId.ToString());        
+        await EnsureCollectionAsync();
+        var lookup = await _textMemory.GetAsync(s_collection, sessionId.ToString());
         var chatHistory = JsonConvert.DeserializeObject<ChatHistory>(lookup?.Metadata.Text ?? "[]");
+        return new() { SessionId = sessionId, ChatHistory = chatHistory };
     }
 
     public Task<IEnumerable<ChatHistorySession>> GetChatHistorySessions()

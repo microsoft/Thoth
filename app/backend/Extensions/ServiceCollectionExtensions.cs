@@ -1,4 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+#pragma warning disable SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 namespace MinimalApi.Extensions;
 
@@ -76,6 +81,13 @@ internal static class ServiceCollectionExtensions
         });
 
         services.AddSingleton<AzureBlobStorageService>();
+        services.AddSingleton<ChatHistoryService>(sp =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+            IMemoryStore store = new AzureAISearchMemoryStore(config["AZURE_SEARCH_SERVICE_ENDPOINT"] ?? string.Empty, s_azureCredential);
+
+            return new ChatHistoryService(store, config, s_azureCredential);
+        });
         services.AddSingleton<ReadRetrieveReadChatService>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
@@ -100,3 +112,6 @@ internal static class ServiceCollectionExtensions
         return services;
     }
 }
+
+#pragma warning restore SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
