@@ -22,8 +22,17 @@ s_rootCommand.SetHandler(
 
             context.Console.WriteLine($"Processing {files.Count()} files...");
 
-            var tasks = files.ToList().Select(i => ProcessSingleFileAsync(options, i, embedService));
-            await Task.WhenAll(tasks);
+            // todo: throw wait time and chunk size into options
+            var taskChunks = files.ToList()
+            .Select(i => ProcessSingleFileAsync(options, i, embedService))
+            .Chunk(25);
+
+            foreach (var task in taskChunks)
+            {
+                await Task.WhenAll(task);
+
+                await Task.Delay(TimeSpan.FromSeconds(30));
+            }
 
             static async Task ProcessSingleFileAsync(AppOptions options, string fileName, IEmbedService embedService)
             {
