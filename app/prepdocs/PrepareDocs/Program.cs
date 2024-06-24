@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics;
-using System.Linq;
-
 s_rootCommand.SetHandler(
     async (context) =>
     {
@@ -25,13 +22,13 @@ s_rootCommand.SetHandler(
             // todo: throw wait time and chunk size into options
             var taskChunks = files.ToList()
             .Select(i => ProcessSingleFileAsync(options, i, embedService))
-            .Chunk(25);
+            .Chunk(options.BatchSize);
 
             foreach (var task in taskChunks)
             {
                 await Task.WhenAll(task);
 
-                await Task.Delay(TimeSpan.FromSeconds(30));
+                await Task.Delay(TimeSpan.FromSeconds(options.WaitTime));
             }
 
             static async Task ProcessSingleFileAsync(AppOptions options, string fileName, IEmbedService embedService)
