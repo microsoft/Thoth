@@ -24,6 +24,8 @@ s_rootCommand.SetHandler(
             .Select(i => ProcessSingleFileAsync(options, i, embedService))
             .Chunk(options.BatchSize);
 
+            var exceptions = new List<Exception>();
+
             foreach (var (task, i) in taskChunks.Select((c, i) => (c, i)))
             {
                 Console.WriteLine($"Executing batch {i} of {taskChunks.Count()}");
@@ -33,7 +35,6 @@ s_rootCommand.SetHandler(
                 try
                 {
                     await aggregateTask;
-
                 }
                 catch (Exception)
                 {
@@ -41,12 +42,16 @@ s_rootCommand.SetHandler(
                     if (aggregateTask.Exception != null)
                     {
                         // may need to introduce better logging here
-                        throw aggregateTask.Exception;
+                        exceptions.Add(aggregateTask.Exception);
                     }
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(options.WaitTime));
             }
+
+            // may want to introduce better logging here
+            if (exceptions.Any())
+                throw new AggregateException(exceptions);
 
             static async Task ProcessSingleFileAsync(AppOptions options, string fileName, IEmbedService embedService)
             {
