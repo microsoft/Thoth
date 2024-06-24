@@ -161,6 +161,14 @@ public class AzureSearchEmbedServiceTest
 
             // check if the document page is uploaded to blob
             var blobs = containerClient.GetBlobsAsync();
+            var blobNames = await blobs.AsPages().
+
+            List<string> blobNames = [];
+            await foreach(var blob in blobs)
+            {
+                blobNames.Add(blob.Name);
+            }
+            
             var blobNames = blobs.Select(b => b.Name).ToListAsync();
             blobNames.Result.Count.Should().Be(4);
             blobNames.Result.Should().BeEquivalentTo([ "Benefit_Options-0.txt", "Benefit_Options-1.txt", "Benefit_Options-2.txt", "Benefit_Options-3.txt" ]);

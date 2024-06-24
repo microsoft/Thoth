@@ -4,7 +4,7 @@ using ClientApp.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.RootComponents.Add<SharedWebComponents.App>("#app");
+builder.RootComponents.Add<ClientApp.App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.Configure<AppSettings>(
