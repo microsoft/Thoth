@@ -152,8 +152,12 @@ internal static class WebApplicationExtensions
     {
         logger.LogInformation("Get chat history sessions");
 
-        var sessions = await chatHistory.GetChatHistorySessions();
-        var response = sessions.Select(s => new ChatSessionListResponse { SessionId = s.SessionId, Title = s.Title });
+        var sessions = chatHistory.GetChatHistorySessionsAsync("user1");
+		IEnumerable<ChatSessionListResponse> response = new List<ChatSessionListResponse>();
+		await foreach (var session in sessions)
+		{
+			response = response.Append(new ChatSessionListResponse { SessionId = session.Id, Title = session.Title });
+		}
 
         return TypedResults.Ok(response);
     }
@@ -166,7 +170,7 @@ internal static class WebApplicationExtensions
     {
         logger.LogInformation($"Get chat history for session with id: {sessionId}");
 
-        var response = await chatHistory.GetChatHistorySession(sessionId);
+        var response = await chatHistory.GetChatHistorySessionAsync(sessionId);
 
         return TypedResults.Ok(response);
     }

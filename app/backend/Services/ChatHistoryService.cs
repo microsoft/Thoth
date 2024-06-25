@@ -1,77 +1,70 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-#pragma warning disable SKEXP0003 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#pragma warning disable SKEXP0011 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Memory;
-using Azure.Core;
-using Newtonsoft.Json;
+using Microsoft.Azure.Cosmos;
+using Container = Microsoft.Azure.Cosmos.Container;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-public class ChatHistoryService : IChatHistoryService
+public class ChatHistoryService(CosmosClient dbClient) : IChatHistoryService
 {
     private static string s_collection = "chathistory";
-	private readonly IMemoryStore _memoryStore;
-	private readonly Kernel _kernel;
-    private readonly SemanticTextMemory _textMemory;
+	private static string s_databaseName = "chatdb";
+	private readonly CosmosClient _dbClient = dbClient;
 
-    public ChatHistoryService(
-        IMemoryStore memoryStore,
-        IConfiguration configuration,
-        TokenCredential? tokenCredential = null)
+	public async Task AddChatHistorySessionAsync(ChatHistorySession chatHistory)
     {
-        _memoryStore = memoryStore;
-        var kernelBuilder = Kernel.CreateBuilder();
-        var embeddingModelName = configuration["AZURE_OPENAI_EMBEDDING_DEPLOYMENT"];
-
-        if (!string.IsNullOrEmpty(embeddingModelName))
-        {
-            var endpoint = configuration["AZURE_OPENAI_ENDPOINT"];
-            ArgumentNullException.ThrowIfNullOrWhiteSpace(endpoint);
-            kernelBuilder = kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(embeddingModelName, endpoint, tokenCredential ?? new DefaultAzureCredential());
-        }
-
-        _kernel = kernelBuilder.Build();
-        // The combination of the text embedding generator and the memory store makes up the 'SemanticTextMemory' object used to
-        // store and retrieve memories.
-        _textMemory = new(_memoryStore, _kernel.GetRequiredService<AzureOpenAITextEmbeddingGenerationService>());
+		var container = await GetContainerAsync();
+		await container.CreateItemAsync(chatHistory);
     }
 
-    public async Task AddChatHistorySession(ChatHistorySession chatHistory)
+    public async Task DeleteChatHistorySessionAsync(string sessionId)
     {
-        await EnsureCollectionAsync();
-        var jsonHistory = JsonConvert.SerializeObject(chatHistory.ChatHistory);
-        await _textMemory.SaveInformationAsync(s_collection, chatHistory.SessionId.ToString(), jsonHistory);
+		var container = await GetContainerAsync();
+		await container.DeleteItemAsync<ChatHistorySession>(sessionId, new PartitionKey(sessionId));
     }
 
-    public async Task DeleteChatHistorySession(string sessionId)
+    public async Task<ChatHistorySession> GetChatHistorySessionAsync(string sessionId)
     {
-        await _textMemory.RemoveAsync(s_collection, sessionId.ToString());
+		var container = await GetContainerAsync();
+		try
+		{
+			var item = await container.ReadItemAsync<ChatHistorySession>(sessionId, new PartitionKey(sessionId));
+			return item.Resource;
+		}
+		catch (CosmosException cex)
+		{
+			var errorHistory = new ChatHistory(cex.Message);
+			return new ChatHistorySession(sessionId, "", "", errorHistory);
+		}
     }
 
-    public async Task<ChatHistorySession> GetChatHistorySession(string sessionId)
+    public async IAsyncEnumerable<ChatHistorySession> GetChatHistorySessionsAsync(string userId)
     {
-        await EnsureCollectionAsync();
-        var lookup = await _textMemory.GetAsync(s_collection, sessionId.ToString());
-        var chatHistory = JsonConvert.DeserializeObject<ChatHistory>(lookup?.Metadata.Text ?? "[]");
-        return new() { SessionId = sessionId, ChatHistory = chatHistory! };
-    }
+		var container = await GetContainerAsync();
+		var query = new QueryDefinition(
+			query: $"SELECT * FROM {s_collection} c WHERE c.UserId = @userid"
+		)
+		.WithParameter("@userid", userId);
 
-    public Task<IEnumerable<ChatHistorySession>> GetChatHistorySessions()
-    {
-        throw new NotImplementedException();
+		using FeedIterator<ChatHistorySession> feed = container.GetItemQueryIterator<ChatHistorySession>(query);
+		while (feed.HasMoreResults)
+		{
+			foreach(var session in await feed.ReadNextAsync())
+			{
+				yield return session;
+			}
+		}
     }
 
     private async Task EnsureCollectionAsync()
     {
-        if (!await _memoryStore.DoesCollectionExistAsync(s_collection))
-        {
-            await _memoryStore.CreateCollectionAsync(s_collection);
-        }
+		await _dbClient.CreateDatabaseIfNotExistsAsync(s_databaseName);
+		var database = _dbClient.GetDatabase(s_databaseName);
+		await database.CreateContainerIfNotExistsAsync(s_collection, "/Id");
     }
-}
 
-#pragma warning restore SKEXP0003 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#pragma warning restore SKEXP0011 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+	private async Task<Container> GetContainerAsync()
+	{
+		await EnsureCollectionAsync();
+		return _dbClient.GetDatabase(s_databaseName).GetContainer(s_collection);
+	}
+}
