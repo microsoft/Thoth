@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.AI.DocumentIntelligence;
+
 internal static partial class Program
 {
     private static BlobContainerClient? s_corpusContainerClient;
     private static BlobContainerClient? s_containerClient;
-    private static DocumentAnalysisClient? s_documentClient;
+    private static DocumentIntelligenceClient? s_documentClient;
     private static SearchIndexClient? s_searchIndexClient;
     private static SearchClient? s_searchClient;
     private static OpenAIClient? s_openAIClient;
@@ -34,7 +36,7 @@ internal static partial class Program
                 searchClient: searchClient,
                 searchIndexName: searchIndexName,
                 searchIndexClient: searchIndexClient,
-                documentAnalysisClient: documentClient,
+				documentIntelligenceClient: documentClient,
                 corpusContainerClient: blobContainerClient,
                 logger: null);
         });
@@ -82,25 +84,25 @@ internal static partial class Program
             return s_containerClient;
         });
 
-    private static Task<DocumentAnalysisClient> GetFormRecognizerClientAsync(AppOptions options) =>
-        GetLazyClientAsync<DocumentAnalysisClient>(options, s_documentLock, static async o =>
+    private static Task<DocumentIntelligenceClient> GetFormRecognizerClientAsync(AppOptions options) =>
+        GetLazyClientAsync<DocumentIntelligenceClient>(options, s_documentLock, static async o =>
         {
             if (s_documentClient is null)
             {
                 var endpoint = o.FormRecognizerServiceEndpoint;
                 ArgumentNullException.ThrowIfNullOrEmpty(endpoint);
 
-                s_documentClient = new DocumentAnalysisClient(
-                    new Uri(endpoint),
-                    DefaultCredential,
-                    new DocumentAnalysisClientOptions
-                    {
-                        Diagnostics =
-                        {
-                            IsLoggingContentEnabled = true
-                        }
-                    });
-            }
+				s_documentClient = new DocumentIntelligenceClient(
+				   new Uri(endpoint),
+				   DefaultCredential,
+				   new DocumentIntelligenceClientOptions
+				   {
+					   Diagnostics =
+					   {
+							IsLoggingContentEnabled = true
+					   }
+				   });
+			}
 
             await Task.CompletedTask;
 

@@ -14,10 +14,10 @@ public sealed class EmbeddingAggregateService(
             var embeddingType = GetEmbeddingType();
             var embedService = embedServiceFactory.GetEmbedService(embeddingType);
 
-            if (Path.GetExtension(blobName) is ".pdf")
+            if (Path.GetExtension(blobName) is ".pdf" or ".docx" or ".pptx" or ".xlsx" or "html")
             {
-                logger.LogInformation("Embedding pdf: {Name}", blobName);
-                var result = await embedService.EmbedPDFBlobAsync(blobStream, blobName);
+                logger.LogInformation($"Embedding {Path.GetExtension(blobName)}: {blobName}");
+                var result = await embedService.EmbedDocumentBlobAsync(blobStream, blobName);
 
                 var status = result switch
                 {

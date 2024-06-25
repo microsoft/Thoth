@@ -16,7 +16,7 @@ var host = new HostBuilder()
 
         services.AddAzureClients(builder =>
         {
-            builder.AddDocumentAnalysisClient(
+            builder.AddDocumentIntelligenceClient(
                 GetUriFromEnvironment("AZURE_FORMRECOGNIZER_SERVICE_ENDPOINT"));
         });
 
@@ -82,7 +82,7 @@ var host = new HostBuilder()
             var searchClient = provider.GetRequiredService<SearchClient>();
             var searchIndexClient = provider.GetRequiredService<SearchIndexClient>();
             var corpusContainer = provider.GetRequiredService<BlobContainerClient>();
-            var documentClient = provider.GetRequiredService<DocumentAnalysisClient>();
+            var documentClient = provider.GetRequiredService<DocumentIntelligenceClient>();
             var logger = provider.GetRequiredService<ILogger<AzureSearchEmbedService>>();
 
 
@@ -92,7 +92,7 @@ var host = new HostBuilder()
             searchClient: searchClient,
             searchIndexName: searchIndexName,
             searchIndexClient: searchIndexClient,
-            documentAnalysisClient: documentClient,
+            documentIntelligenceClient: documentClient,
             corpusContainerClient: corpusContainer,
             logger: logger);
         });

@@ -4,8 +4,10 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using Azure;
-using Azure.AI.FormRecognizer.DocumentAnalysis;
+using Azure.AI.DocumentIntelligence;
+
 using Azure.AI.OpenAI;
+using Azure.Core;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
@@ -21,14 +23,14 @@ public sealed partial class AzureSearchEmbedService(
     SearchClient searchClient,
     string searchIndexName,
     SearchIndexClient searchIndexClient,
-    DocumentAnalysisClient documentAnalysisClient,
+    DocumentIntelligenceClient documentIntelligenceClient,
     BlobContainerClient corpusContainerClient,
     ILogger<AzureSearchEmbedService>? logger = null) : IEmbedService
 {
     [GeneratedRegex("[^0-9a-zA-Z_-]")]
     private static partial Regex MatchInSetRegex();
 
-    public async Task<bool> EmbedPDFBlobAsync(Stream pdfBlobStream, string blobName)
+    public async Task<bool> EmbedDocumentBlobAsync(Stream pdfBlobStream, string blobName)
     {
         try
         {
@@ -141,17 +143,18 @@ public sealed partial class AzureSearchEmbedService(
 
     public async Task<IReadOnlyList<PageDetail>> GetDocumentTextAsync(Stream blobStream, string blobName)
     {
-        logger?.LogInformation(
-            "Extracting text from '{Blob}' using Azure Form Recognizer", blobName);
+		logger?.LogInformation(
+			 "Extracting text from '{Blob}' using Azure Form Recognizer", blobName);
 
-        using var ms = new MemoryStream();
-        blobStream.Position = 0;
-        await blobStream.CopyToAsync(ms);
-        ms.Position = 0;
-        
-        AnalyzeDocumentOperation operation = documentAnalysisClient.AnalyzeDocument(
-            WaitUntil.Started, "prebuilt-layout", ms);
+		using var ms = new MemoryStream();
+		await blobStream.CopyToAsync(ms);
+		ms.Position = 0;
+		AnalyzeDocumentContent analyzeRequest = new AnalyzeDocumentContent
+		{
+			Base64Source = BinaryData.FromStream(ms)
+		};
 
+		var operation = documentIntelligenceClient.AnalyzeDocument(WaitUntil.Started, "prebuilt-layout", analyzeRequest);
         var offset = 0;
         List<PageDetail> pageMap = [];
 
@@ -159,11 +162,20 @@ public sealed partial class AzureSearchEmbedService(
         var pages = results.Value.Pages;
         for (var i = 0; i < pages.Count; i++)
         {
-            IReadOnlyList<DocumentTable> tablesOnPage =
-                results.Value.Tables.Where(t => t.BoundingRegions[0].PageNumber == i + 1).ToList();
+            IReadOnlyList<DocumentTable> tablesOnPage;
+            if (results.Value.Tables.Any(t => t.BoundingRegions == null || !t.BoundingRegions.Any()))
+            {
+                tablesOnPage = results.Value.Tables.ToList(); 
+            }
+            else
+            {
+                tablesOnPage = results.Value.Tables
+                    .Where(t => t.BoundingRegions[0].PageNumber == i + 1).ToList();
+            }
+
 
             // Mark all positions of the table spans in the page
-            int pageIndex = pages[i].Spans[0].Index;
+            int pageIndex = pages[i].Spans[0].Offset;
             int pageLength = pages[i].Spans[0].Length;
             int[] tableChars = Enumerable.Repeat(-1, pageLength).ToArray();
             for (var tableId = 0; tableId < tablesOnPage.Count; tableId++)
@@ -173,7 +185,7 @@ public sealed partial class AzureSearchEmbedService(
                     // Replace all table spans with "tableId" in tableChars array
                     for (var j = 0; j < span.Length; j++)
                     {
-                        int index = span.Index - pageIndex + j;
+                        int index = span.Offset - pageIndex + j;
                         if (index >= 0 && index < pageLength)
                         {
                             tableChars[index] = tableId;

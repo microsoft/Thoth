@@ -11,7 +11,7 @@ public interface IEmbedService
     /// An asynchronous operation that yields <c>true</c>
     /// when successfully embedded, otherwise <c>false</c>.
     /// </returns>
-    Task<bool> EmbedPDFBlobAsync(
+    Task<bool> EmbedDocumentBlobAsync(
         Stream blobStream,
         string blobName);    
 

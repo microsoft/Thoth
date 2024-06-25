@@ -198,7 +198,7 @@ static async ValueTask UploadBlobsAndCreateIndexAsync(
         using var stream = new MemoryStream();
         var blobClient = container.GetBlobClient(fileName);
         await blobClient.DownloadToAsync(stream);
-        await embeddingService.EmbedPDFBlobAsync(stream, fileName);
+        await embeddingService.EmbedDocumentBlobAsync(stream, fileName);
     }
     // TODO: add same logic as with PDFs    
     //else
