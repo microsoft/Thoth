@@ -153,6 +153,7 @@ internal static class WebApplicationExtensions
     }
 
     private static async Task<IResult> OnGetChatSessionAsync(
+		HttpContext context,
         [FromRoute] string sessionId,
         [FromServices] ILogger<ChatHistoryService> logger,
         [FromServices] IChatHistoryService chatHistory,
@@ -160,14 +161,19 @@ internal static class WebApplicationExtensions
     {
         logger.LogInformation($"Get chat history for session with id: {sessionId}");
 
+		var username = context.GetUserName();
 		// put try/catch here
         var response = await chatHistory.GetChatHistorySessionAsync(sessionId);
+
+		if (!response.UserId.Equals(username))
+			return Results.NotFound();
 
         return TypedResults.Ok(response);
     }
 
 	private static async Task<IResult> OnPostChatSessionAsync(
 		[FromRoute] string sessionId,
+		HttpContext context,
 		ChatHistorySession chatHistorySession,
 		[FromServices] ILogger<ChatHistoryService> logger,
 		[FromServices] IChatHistoryService chatHistory,
@@ -175,13 +181,27 @@ internal static class WebApplicationExtensions
 	{
 		logger.LogInformation($"Add or update chat history with id: {sessionId}");
 
+		var username = context.GetUserName();
+
 		if (!sessionId.Equals(chatHistorySession.Id, StringComparison.InvariantCultureIgnoreCase))
 		{
 			return Results.BadRequest();
+		}
+
+		if (!chatHistorySession.UserId.Equals(username))
+		{
+			return Results.Unauthorized();
 		}
 		// put try/catch around this instead of internal to service
 		var response = await chatHistory.UpsertChatHistorySessionAsync(chatHistorySession);
 
 		return TypedResults.Ok(response);
+	}
+
+	private static string GetUserName(this HttpContext context)
+	{
+		var header = context.Request.Headers["X-MS-CLIENT-PRINCIPAL-ID"];
+		var userName = !string.IsNullOrEmpty(header) ? header.ToString() : "localuser";
+		return userName;
 	}
 }
