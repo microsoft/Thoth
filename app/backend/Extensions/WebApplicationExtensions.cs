@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Primitives;
 using MinimalApi.Models;
 
 namespace MinimalApi.Extensions;
@@ -131,13 +132,17 @@ internal static class WebApplicationExtensions
     }
 
     private static async Task<IResult> OnGetChatSessionsAsync(
-        [FromServices] ILogger<ChatHistoryService> logger,
+		HttpContext context,
+		[FromServices] ILogger<ChatHistoryService> logger,
         [FromServices] IChatHistoryService chatHistory,
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Get chat history sessions");
 
-        var sessions = chatHistory.GetChatHistorySessionsAsync("philbert");
+		var header = context.Request.Headers["X-MS-CLIENT-PRINCIPAL-ID"];
+		var userName = !string.IsNullOrEmpty(header) ? header.ToString() : "localuser";
+
+		var sessions = chatHistory.GetChatHistorySessionsAsync(userName);
 		IEnumerable<ChatSessionListResponse> response = new List<ChatSessionListResponse>();
 		await foreach (var session in sessions)
 		{
