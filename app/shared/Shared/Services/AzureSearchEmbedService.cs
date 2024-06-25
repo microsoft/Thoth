@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Azure;
 using Azure.AI.DocumentIntelligence;
-//using Azure.AI.FormRecognizer.DocumentAnalysis;
 
 using Azure.AI.OpenAI;
 using Azure.Core;
@@ -25,7 +24,6 @@ public sealed partial class AzureSearchEmbedService(
     string searchIndexName,
     SearchIndexClient searchIndexClient,
     DocumentIntelligenceClient documentIntelligenceClient,
-    //DocumentAnalysisClient documentAnalysisClient,
     BlobContainerClient corpusContainerClient,
     ILogger<AzureSearchEmbedService>? logger = null) : IEmbedService
 {
