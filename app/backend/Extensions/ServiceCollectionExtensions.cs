@@ -85,10 +85,12 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<IChatHistoryService>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
-			// need to use cosmos instead
-			CosmosClient cosmosClient = new CosmosClient(config["COSMOS_HISTORY_ENDPOINT"], s_azureCredential);
+			CosmosClientOptions options = new CosmosClientOptions();
+			options.SerializerOptions = new CosmosSerializationOptions();
+			options.SerializerOptions.PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase;
+			CosmosClient cosmosClient = new CosmosClient(config["COSMOS_HISTORY_ENDPOINT"], s_azureCredential, options);
 
-            return new ChatHistoryService(cosmosClient);
+            return new ChatHistoryService(cosmosClient.GetDatabase("chatdb").GetContainer("chathistory"));
         });
         services.AddSingleton<ReadRetrieveReadChatService>(sp =>
         {

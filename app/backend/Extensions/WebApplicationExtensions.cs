@@ -22,6 +22,9 @@ internal static class WebApplicationExtensions
         // Get A chat session
         api.MapGet("chatsessions/{sessionId}", OnGetChatSessionAsync);
 
+		// Upsert a chat session
+		api.MapPost("chatsessions/{sessionId}", OnPostChatSessionAsync);
+
         // Upload a document
         api.MapPost("documents", OnPostDocumentAsync);
 
@@ -152,7 +155,7 @@ internal static class WebApplicationExtensions
     {
         logger.LogInformation("Get chat history sessions");
 
-        var sessions = chatHistory.GetChatHistorySessionsAsync("user1");
+        var sessions = chatHistory.GetChatHistorySessionsAsync("philbert");
 		IEnumerable<ChatSessionListResponse> response = new List<ChatSessionListResponse>();
 		await foreach (var session in sessions)
 		{
@@ -170,8 +173,28 @@ internal static class WebApplicationExtensions
     {
         logger.LogInformation($"Get chat history for session with id: {sessionId}");
 
+		// put try/catch here
         var response = await chatHistory.GetChatHistorySessionAsync(sessionId);
 
         return TypedResults.Ok(response);
     }
+
+	private static async Task<IResult> OnPostChatSessionAsync(
+		[FromRoute] string sessionId,
+		ChatHistorySession chatHistorySession,
+		[FromServices] ILogger<ChatHistoryService> logger,
+		[FromServices] IChatHistoryService chatHistory,
+		CancellationToken cancellationToken)
+	{
+		logger.LogInformation($"Add or update chat history with id: {sessionId}");
+
+		if (!sessionId.Equals(chatHistorySession.Id, StringComparison.InvariantCultureIgnoreCase))
+		{
+			return Results.BadRequest();
+		}
+		// put try/catch around this instead of internal to service
+		var response = await chatHistory.UpsertChatHistorySessionAsync(chatHistorySession);
+
+		return TypedResults.Ok(response);
+	}
 }

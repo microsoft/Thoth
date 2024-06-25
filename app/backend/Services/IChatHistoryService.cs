@@ -2,7 +2,7 @@
 
 public interface IChatHistoryService
 {
-    Task AddChatHistorySessionAsync(ChatHistorySession chatHistory);
+	Task<ChatHistorySession> UpsertChatHistorySessionAsync(ChatHistorySession chatHistory);
 
     Task<ChatHistorySession> GetChatHistorySessionAsync(string sessionId);
 

@@ -4,30 +4,29 @@ using Microsoft.Azure.Cosmos;
 using Container = Microsoft.Azure.Cosmos.Container;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-public class ChatHistoryService(CosmosClient dbClient) : IChatHistoryService
-{
-    private static string s_collection = "chathistory";
-	private static string s_databaseName = "chatdb";
-	private readonly CosmosClient _dbClient = dbClient;
+public class ChatHistoryService(Container container) : IChatHistoryService
+{	
+	private readonly Container _container = container;
 
-	public async Task AddChatHistorySessionAsync(ChatHistorySession chatHistory)
-    {
-		var container = await GetContainerAsync();
-		await container.CreateItemAsync(chatHistory);
+	public async Task<ChatHistorySession> UpsertChatHistorySessionAsync(ChatHistorySession chatHistory)
+    {		
+		var response = await _container.UpsertItemAsync<ChatHistorySession>(chatHistory);
+		if (response.StatusCode == System.Net.HttpStatusCode.OK)
+			return response.Resource;
+
+		return new ChatHistorySession(chatHistory.Id, "", "", new ChatHistory("Failed"));
     }
 
     public async Task DeleteChatHistorySessionAsync(string sessionId)
     {
-		var container = await GetContainerAsync();
-		await container.DeleteItemAsync<ChatHistorySession>(sessionId, new PartitionKey(sessionId));
+		await _container.DeleteItemAsync<ChatHistorySession>(sessionId, new PartitionKey(sessionId));
     }
 
     public async Task<ChatHistorySession> GetChatHistorySessionAsync(string sessionId)
     {
-		var container = await GetContainerAsync();
 		try
 		{
-			var item = await container.ReadItemAsync<ChatHistorySession>(sessionId, new PartitionKey(sessionId));
+			var item = await _container.ReadItemAsync<ChatHistorySession>(sessionId, new PartitionKey(sessionId));
 			return item.Resource;
 		}
 		catch (CosmosException cex)
@@ -39,13 +38,12 @@ public class ChatHistoryService(CosmosClient dbClient) : IChatHistoryService
 
     public async IAsyncEnumerable<ChatHistorySession> GetChatHistorySessionsAsync(string userId)
     {
-		var container = await GetContainerAsync();
 		var query = new QueryDefinition(
-			query: $"SELECT * FROM {s_collection} c WHERE c.UserId = @userid"
+			query: $"SELECT * FROM {_container.Id} c WHERE c.userId = @userid"
 		)
 		.WithParameter("@userid", userId);
 
-		using FeedIterator<ChatHistorySession> feed = container.GetItemQueryIterator<ChatHistorySession>(query);
+		using FeedIterator<ChatHistorySession> feed = _container.GetItemQueryIterator<ChatHistorySession>(query);
 		while (feed.HasMoreResults)
 		{
 			foreach(var session in await feed.ReadNextAsync())
@@ -53,18 +51,5 @@ public class ChatHistoryService(CosmosClient dbClient) : IChatHistoryService
 				yield return session;
 			}
 		}
-    }
-
-    private async Task EnsureCollectionAsync()
-    {
-		await _dbClient.CreateDatabaseIfNotExistsAsync(s_databaseName);
-		var database = _dbClient.GetDatabase(s_databaseName);
-		await database.CreateContainerIfNotExistsAsync(s_collection, "/Id");
-    }
-
-	private async Task<Container> GetContainerAsync()
-	{
-		await EnsureCollectionAsync();
-		return _dbClient.GetDatabase(s_databaseName).GetContainer(s_collection);
-	}
+    }    
 }
