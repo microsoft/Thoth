@@ -47,7 +47,7 @@ param azureEmbeddingDeploymentName string = 'embedding'
 param embeddingDeploymentCapacity int = 30
 
 @description('Name of the embedding model. Default: text-embedding-ada-002')
-param azureEmbeddingModelName string = 'text-embedding-ada-002'
+param azureEmbeddingModelName string = 'text-embedding-3-small'
 
 @description('Location of the resource group for the Form Recognizer service')
 param formRecognizerResourceGroupLocation string = location
@@ -419,6 +419,8 @@ module database 'core/storage/cosmosdb-account.bicep' = {
   params: {
     accountName: !empty(cosmosDbAccountName) ? cosmosDbAccountName : '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
     location: location
+    databaseName: 'chatdb'
+    containerName: 'chathistory'
   }
 }
 

@@ -4,6 +4,7 @@
 
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using Microsoft.Azure.Cosmos;
 
 namespace MinimalApi.Extensions;
 
@@ -81,12 +82,15 @@ internal static class ServiceCollectionExtensions
         });
 
         services.AddSingleton<AzureBlobStorageService>();
-        services.AddSingleton<ChatHistoryService>(sp =>
+        services.AddSingleton<IChatHistoryService>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
-            IMemoryStore store = new AzureAISearchMemoryStore(config["AZURE_SEARCH_SERVICE_ENDPOINT"] ?? string.Empty, s_azureCredential);
+			CosmosClientOptions options = new CosmosClientOptions();
+			options.SerializerOptions = new CosmosSerializationOptions();
+			options.SerializerOptions.PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase;
+			CosmosClient cosmosClient = new CosmosClient(config["COSMOS_HISTORY_ENDPOINT"], s_azureCredential, options);
 
-            return new ChatHistoryService(store, config, s_azureCredential);
+            return new ChatHistoryService(cosmosClient.GetDatabase("chatdb").GetContainer("chathistory"));
         });
         services.AddSingleton<ReadRetrieveReadChatService>(sp =>
         {

@@ -2,11 +2,11 @@
 
 public interface IChatHistoryService
 {
-    Task AddChatHistorySession(ChatHistorySession chatHistory);
+	Task<ChatHistorySession> UpsertChatHistorySessionAsync(ChatHistorySession chatHistory);
 
-    Task<ChatHistorySession> GetChatHistorySession(string sessionId);
+    Task<ChatHistorySession> GetChatHistorySessionAsync(string sessionId);
 
-    Task<IEnumerable<ChatHistorySession>> GetChatHistorySessions();
+    IAsyncEnumerable<ChatHistorySession> GetChatHistorySessionsAsync(string userId);
 
-    Task DeleteChatHistorySession(string sessionId);
+    Task DeleteChatHistorySessionAsync(string sessionId);
 }

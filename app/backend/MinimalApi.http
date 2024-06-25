@@ -1,0 +1,20 @@
+﻿@MinimalApi_HostAddress = https://localhost:7181
+
+POST {{MinimalApi_HostAddress}}/api/chatsessions/test1
+content-type: application/json
+
+{
+  "id": "test1",
+  "userId": "philbert",
+  "title": "test session1",
+  "chatHistory": []
+}
+###
+
+GET {{MinimalApi_HostAddress}}/api/chatsessions/test1
+
+###
+
+GET {{MinimalApi_HostAddress}}/api/chatsessions
+
+###

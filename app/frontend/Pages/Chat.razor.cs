@@ -60,7 +60,7 @@ public sealed partial class Chat
         Console.WriteLine("Loading chat history from query param");
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
 
-        if (!QueryHelpers.ParseQuery(uri.Query).TryGetValue(nameof(ChatHistorySession.SessionId), out var ChatSessionId))
+        if (!QueryHelpers.ParseQuery(uri.Query).TryGetValue(nameof(ChatHistorySessionUI.Id), out var ChatSessionId))
         {
             return;
         }
@@ -140,7 +140,7 @@ public sealed partial class Chat
         var newChatHistorySession = ChatHistoryService.AddChatHistorySession(_questionAndAnswerMap);
 
         ChatSessionId = newChatHistorySession.Id;
-        NavigationManager.NavigateTo($"/chat?{nameof(ChatHistorySession.SessionId)}={newChatHistorySession.Id}");
+        NavigationManager.NavigateTo($"/chat?{nameof(ChatHistorySessionUI.Id)}={newChatHistorySession.Id}");
     }
 
     private void OnPinQuestion(string question, DateTime askedOn)
