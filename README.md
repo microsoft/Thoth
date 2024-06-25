@@ -33,6 +33,15 @@ Retrieval Augmented Generation, or RAG pattern applications opinionated AI appli
    - [**Azure OpenAI Service**](https://learn.microsoft.com/azure/ai-services/openai/overview) – provides the Large Language Models to generate vectoring embeddings for the indexed document chunks.
    - [**Azure AI Search**](https://learn.microsoft.com/azure/search/search-what-is-azure-search) – indexes embedded document chunks from the data stored in an Azure Storage Account. This makes the documents searchable using [vector search](https://learn.microsoft.com/azure/search/search-get-started-vector) capabilities.    
 
+## Features
+
+* Natural language chat UI
+* Save and delete persisted chat sessions by user
+* Pin favorite queries by user, displayed as suggested questions on chat page
+* RAG pattern via vector search on vector embedded documents (pdf, word, excel, images, ppt, html, tiff)
+* blob triggered function to process, vector embed and index documents
+* dev utility console app for bulk process, vector embed and index a container of documents
+
 ## Getting Started
 This sample application, as deployed, includes the following Azure components.
 
@@ -177,11 +186,10 @@ Navigate to <http://localhost:7181>, and test out the app.
 
 This example is designed to be a starting point for your own production application, but on it's own is not production ready. Some additional considerations, although not exhaustive, are below. 
 
-* **OpenAI Capacity**: The default TPM (tokens per minute) is set to 30K. That is equivalent to approximately 30 conversation turns per minute (assuming 1K per user message/response). You can increase the capacity by changing the `chatGptDeploymentCapacity` and `embeddingDeploymentCapacity` parameters in `infra/main.bicep` to your account's maximum capacity. You can also view the Quotas tab in [Azure OpenAI studio](https://oai.azure.com/) to understand how much capacity you have.
-* **Azure Storage**: The default storage account uses the `Standard_LRS` SKU. To improve your resiliency, consider using `Standard_ZRS` for production deployments, which you can specify using the `sku` property under the `storage` module in `infra/main.bicep`.
+* **OpenAI Capacity**: The default TPM (tokens per minute) is set to 30K. That is equivalent to approximately 30 conversation turns per minute (assuming 1K per user message/response). You can increase the capacity by changing the `chatGptDeploymentCapacity` and `embeddingDeploymentCapacity` parameters in `infra/main.bicep` to your account's maximum capacity. You can also view the Quotas tab in [Azure OpenAI studio](https://oai.azure.com/) to understand how much capacity you have. Additionally, consider securing [Provisioned Throughput Units (PTUs)](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/provisioned-throughput) for guaranteed capacity and predictable performance.
+* **API Management**: Use of the APIM gateway for managing calls to LLM deployments can improve security, scalability, latency, monitoring and analytics. At a minimum, failover to multiple backend model deployments on exceeding token limit to ensure uninterrupted availability. See [Introducing GenAI Gateway Capabilities in Azure API Management](https://techcommunity.microsoft.com/t5/azure-integration-services-blog/introducing-genai-gateway-capabilities-in-azure-api-management/ba-p/4146525) for more information.
 * **Azure AI Search**: If you see errors about search service capacity being exceeded, you may find it helpful to increase the number of replicas by changing `replicaCount` in `infra/core/search/search-services.bicep` or manually scaling it from the Azure Portal.
-* **API Management**: 
-* **Networking**: We recommend deploying inside a Virtual Network. If the app is only for internal enterprise use, use a private DNS zone. Also consider using Azure API Management (APIM) for firewalls and other forms of protection. For more details, read [Azure OpenAI Landing Zone reference architecture](https://techcommunity.microsoft.com/t5/azure-architecture-blog/azure-openai-landing-zone-reference-architecture/ba-p/3882102).
+* **Azure Storage**: The default storage account uses the `Standard_LRS` SKU. To improve your resiliency, consider using `Standard_ZRS` for production deployments, which you can specify using the `sku` property under the `storage` module in `infra/main.bicep`.
 
 ## Resources
 
@@ -190,7 +198,7 @@ This project started with the sample application below:
 
 [https://github.com/Azure-Samples/azure-search-openai-demo-csharp](https://github.com/Azure-Samples/azure-search-openai-demo-csharp)
 
-Noteable variations and notes:
+### Noteable variations
 * Deploys to App Service instead of Container App
 * Updated Azure OpenAI deployments (GPT-4o, text-embedding-3-small)
 * Upgraded to Doc Intelligence v4.0 preview SDK for Word document support
@@ -208,7 +216,13 @@ Noteable variations and notes:
 > The PDF documents used in this demo contain information generated using a language model (Azure OpenAI Service). The information contained in these documents is only for demonstration purposes and does not reflect the opinions or beliefs of Microsoft. Microsoft makes no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability or availability with respect to the information contained in this document. All rights reserved to Microsoft.
 
 ### Other Resources
-- [Revolutionize your Enterprise Data with ChatGPT: Next-gen Apps w/ Azure OpenAI and Cognitive Search](https://aka.ms/entgptsearchblog)
+- [Semantic Kernel Overview](https://learn.microsoft.com/en-us/semantic-kernel/overview)
+- [Semantic Kernel GitHub](https://github.com/microsoft/semantic-kernel)
 - [Azure AI Search](https://learn.microsoft.com/azure/search/search-what-is-azure-search)
+- [AI Search - Vector Search](https://learn.microsoft.com/azure/search/search-get-started-vector)
 - [Azure OpenAI Service](https://learn.microsoft.com/azure/cognitive-services/openai/overview)
 - [`Azure.AI.OpenAI` NuGet package](https://www.nuget.org/packages/Azure.AI.OpenAI)
+- [Document Intelligence](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-4.0.0)
+- [Doc Intelligence pre-built layout model](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/concept-layout?view=doc-intel-4.0.0&tabs=sample-code)
+- [Introducing GenAI Gateway Capabilities in Azure API Management - Microsoft Community Hub](https://techcommunity.microsoft.com/t5/azure-integration-services-blog/introducing-genai-gateway-capabilities-in-azure-api-management/ba-p/4146525)
+- [Blazor WebAssembly](https://learn.microsoft.com/aspnet/core/blazor/)
