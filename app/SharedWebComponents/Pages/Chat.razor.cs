@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.WebUtilities;
 using System;
+using System.Linq;
 
 namespace SharedWebComponents.Pages;
 
@@ -111,10 +112,12 @@ public sealed partial class Chat
         {
             var history = _questionAndAnswerMap
                 .Where(x => x.Value?.Choices is { Length: > 0 })
-                .SelectMany(x => new ChatMessage[] { new ChatMessage("user", x.Key.Question), new ChatMessage("assistant", x.Value!.Choices[0].Message.Content) })
+                .SelectMany(x => new ChatMessage[] {
+                    new ChatMessage("user", x.Key.Question, 0),
+                    new ChatMessage("assistant", x.Value!.Choices[0].Message.Content, x.Value!.Choices[0].Message.TotalTokens) })
                 .ToList();
 
-            history.Add(new ChatMessage("user", _userQuestion));
+            history.Add(new ChatMessage("user", _userQuestion, 0));
 
             var request = new ChatRequest([.. history], Settings.Overrides);
             var result = await ApiClient.ChatConversationAsync(request);
