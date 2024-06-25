@@ -124,6 +124,12 @@ If you have existing resources in Azure that you wish to use, you can configure 
 > [!NOTE]<br> 
 > You can also use existing Search and Storage Accounts. See `./infra/main.parameters.json` for list of environment variables to pass to `azd env set` to configure those existing resources.
 
+### Configure Authentication
+UNDER DEVELOPMENT
+
+TODO:
+- Enable easy auth on app service
+
 ### Run the deployed app
 
 - In Azure: navigate to the Azure App Service deployed by `azd`. The URL is printed out when `azd` completes (as "Endpoint"), or you can find it in the Azure portal.
