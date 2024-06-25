@@ -143,19 +143,18 @@ public sealed partial class AzureSearchEmbedService(
 
     public async Task<IReadOnlyList<PageDetail>> GetDocumentTextAsync(Stream blobStream, string blobName)
     {
-        logger?.LogInformation(
-            "Extracting text from '{Blob}' using Azure Form Recognizer", blobName);
+		logger?.LogInformation(
+			 "Extracting text from '{Blob}' using Azure Form Recognizer", blobName);
 
-        using var ms = new MemoryStream();
-        blobStream.Position = 0;
-        await blobStream.CopyToAsync(ms);
-        ms.Position = 0;
-        AnalyzeDocumentContent analyzeRequest = new AnalyzeDocumentContent
-        {
-            Base64Source = BinaryData.FromStream(ms)
-        };
+		using var ms = new MemoryStream();
+		await blobStream.CopyToAsync(ms);
+		ms.Position = 0;
+		AnalyzeDocumentContent analyzeRequest = new AnalyzeDocumentContent
+		{
+			Base64Source = BinaryData.FromStream(ms)
+		};
 
-        var operation = documentIntelligenceClient.AnalyzeDocument(WaitUntil.Started, "prebuilt-layout", analyzeRequest);
+		var operation = documentIntelligenceClient.AnalyzeDocument(WaitUntil.Started, "prebuilt-layout", analyzeRequest);
         var offset = 0;
         List<PageDetail> pageMap = [];
 

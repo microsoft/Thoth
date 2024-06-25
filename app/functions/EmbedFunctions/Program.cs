@@ -17,7 +17,7 @@ var host = new HostBuilder()
         services.AddAzureClients(builder =>
         {
             builder.AddDocumentIntelligenceClient(
-                GetUriFromEnvironment("AZURE_DOCUMENT_INTELLIGENCE_SERVICE_ENDPOINT"));
+                GetUriFromEnvironment("AZURE_FORMRECOGNIZER_SERVICE_ENDPOINT"));
         });
 
         services.AddSingleton<SearchClient>(_ =>
