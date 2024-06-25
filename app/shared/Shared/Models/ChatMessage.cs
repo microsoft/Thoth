@@ -6,7 +6,8 @@ namespace Shared.Models;
 
 public record ChatMessage(
     [property:JsonPropertyName("role")] string Role,
-    [property: JsonPropertyName("content")] string Content)
+    [property: JsonPropertyName("content")] string Content,
+    [property: JsonPropertyName("totalTokens")] int TotalTokens)
 {
     public bool IsUser => Role == "user";
 }
