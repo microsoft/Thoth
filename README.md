@@ -1,18 +1,16 @@
 # Standard Chat with Enterprise Documents (.NET)
-> A Blazor chat app over a minimal API implementation of a Semantic Kernel ochestrated Retrieval Augmented Generation (RAG) pattern using Azure OpenAI, AI Search and Document Intelligence. 
+> A sample Blazor chat app over a minimal API implementation of a Semantic Kernel ochestrated Retrieval Augmented Generation (RAG) pattern using Azure OpenAI, AI Search and Document Intelligence. 
 
-This example project used the below sample as a starting point, with simplifications and adjustments. 
-
-[https://github.com/Azure-Samples/azure-search-openai-demo-csharp](https://github.com/Azure-Samples/azure-search-openai-demo-csharp)
+This example project used an Azure sample as a starting point, with simplifications and adjustments: [https://github.com/Azure-Samples/azure-search-openai-demo-csharp](https://github.com/Azure-Samples/azure-search-openai-demo-csharp). See [Resources](#resources) for more information. 
 
 ### Contents
 
 - [Features](#features)
 - [Application Architecture](#application-architecture)
-- [Azure account requirements](#account-requirements)
-- [Project setup](#project-setup)
+- [Getting Started](#getting-started)
+- [Project Setup](#project-setup)
 - [Deployment](#deployment)
-- [Using the app](#using-the-app)
+- [Running locally for Dev and Debug](#running-locally-for-dev-and-debug)
 - [Considerations](#considerations)
 - [Resources](#resources)
 
@@ -36,6 +34,9 @@ Retrieval Augmented Generation, or RAG pattern applications opinionated AI appli
    - [**Azure AI Search**](https://learn.microsoft.com/azure/search/search-what-is-azure-search) – indexes embedded document chunks from the data stored in an Azure Storage Account. This makes the documents searchable using [vector search](https://learn.microsoft.com/azure/search/search-get-started-vector) capabilities.    
 
 ## Getting Started
+This sample application, as deployed, includes the following Azure components.
+
+![Deployed Azure Architecture](docs/InfraArchitecture.png)
 
 ### Account Requirements
 
@@ -60,7 +61,7 @@ Pricing varies per region and usage, so it isn't possible to predict exact costs
 - [**Azure Blob Storage**](https://azure.microsoft.com/pricing/details/storage/blobs/)
 - [**Azure Monitor**](https://azure.microsoft.com/pricing/details/monitor/)
 
-### Project setup
+### Project Setup
 
 You have a few options for setting up this project. The easiest way to get started is GitHub Codespaces, since it will setup all the tools for you, but you can also set it up [locally](#local-environment) if desired.
 
@@ -76,32 +77,9 @@ A related option is VS Code Remote Containers, which will open the project in yo
 
 [![Open in Remote - Containers](https://img.shields.io/static/v1?style=for-the-badge&label=Remote%20-%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/azure-samples/azure-search-openai-demo-csharp)
 
-#### Local environment
+## Deployment
 
-Install the following prerequisites:
-
-- [Azure Developer CLI](https://aka.ms/azure-dev/install)
-- [.NET 8](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [Git](https://git-scm.com/downloads)
-- [Powershell 7+ (pwsh)](https://github.com/powershell/powershell) - For Windows users only.
-  
-   > **Important**<br> 
-   > Ensure you can run `pwsh.exe` from a PowerShell command. If this fails, you likely need to upgrade PowerShell.
-
-- [Docker](https://www.docker.com/products/docker-desktop/)
-
-   > **Important**<br>
-   > Ensure Docker is running before running any `azd` provisioning / deployment commands.
-
-Then, run the following commands to get the project on your local environment:
-
-   1. Run `azd auth login`
-   1. Clone the repository or run `azd init -t azure-search-openai-demo-csharp`
-   1. Run `azd env new azure-search-openai-demo-csharp`
-
-### Deployment
-
-#### Deploying from scratch
+### Deploying from scratch
 
 > **Important**<br>
 > Ensure Docker is running before running any `azd` provisioning / deployment commands.
@@ -109,11 +87,11 @@ Then, run the following commands to get the project on your local environment:
 Execute the following command, if you don't have any pre-existing Azure services and want to start from a fresh deployment.
 
 1. Run `azd up` - This will provision Azure resources and deploy this sample to those resources, including building the search index based on the files found in the `./data` folder.
-   - For the target location, the regions that currently support the model used in this sample are **East US 2** , **East US** or **South Central US**. For an up-to-date list of regions and models, check [here](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models)
+   - For the target location, see an up-to-date list of regions and models [here](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models)
    - If you have access to multiple Azure subscriptions, you will be prompted to select the subscription you want to use. If you only have access to one subscription, it will be selected automatically.
 
    > **Note**<br>
-   > This application uses the `gpt-35-turbo` model. When choosing which region to deploy to, make sure they're available in that region (i.e. EastUS). For more information, see the [Azure OpenAI Service documentation](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models#gpt-35-models).
+   > This application uses the `gpt-4o` model. When choosing which region to deploy to, make sure they're available in that region (i.e. EastUS). For more information, see the [Azure OpenAI Service documentation](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models).
 
 1. After the application has been successfully deployed you will see a URL printed to the console. Click that URL to interact with the application in your browser.
 
@@ -124,7 +102,7 @@ It will look like the following:
 > [!NOTE]<br>
 > It may take a few minutes for the application to be fully deployed.
 
-#### Use existing resources
+### Use existing resources
 
 If you have existing resources in Azure that you wish to use, you can configure `azd` to use those by setting the following `azd` environment variables:
 
@@ -137,52 +115,32 @@ If you have existing resources in Azure that you wish to use, you can configure 
 > [!NOTE]<br> 
 > You can also use existing Search and Storage Accounts. See `./infra/main.parameters.json` for list of environment variables to pass to `azd env set` to configure those existing resources.
 
-#### Deploying or re-deploying a local clone of the repo
+### Run the deployed app
 
-> [!IMPORTANT]<br>
-> Ensure Docker is running before running any `azd` provisioning / deployment commands.
+- In Azure: navigate to the Azure App Service deployed by `azd`. The URL is printed out when `azd` completes (as "Endpoint"), or you can find it in the Azure portal.
+- When running locally, navigate to <http://localhost:7181> for the client app and <http://localhost:7181/swagger> for the Open API server page.
 
-- Run `azd up`
+Once in the web app:
 
-#### Deploying your repo using App Spaces
+- Try different topics in **Chat** context. For chat, try follow up questions, clarifications, ask to simplify or elaborate on answer, etc.
+- Explore citations and sources
+- Click on the "settings" icon to try different options, tweak prompts, etc.
 
-> [!NOTE]<br>
-> Make sure you have AZD supported bicep files in your repository and add an initial GitHub Actions Workflow file which can either be triggered manually (for initial deployment) or on code change (automatically re-deploying with the latest changes)
-> To make your repository compatible with App Spaces, you need to make changes to your main bicep and main parameters file to allow AZD to deploy to an existing resource group with the appropriate tags.
+### Tracing in App Insights
 
-1. Add AZURE_RESOURCE_GROUP to main parameters file to read the value from environment variable set in GitHub Actions workflow file by App Spaces.
-   ```json
-   "resourceGroupName": {
-      "value": "${AZURE_RESOURCE_GROUP}"
-    }
-   ```
-2. Add AZURE_TAGS to main parameters file to read the value from environment variable set in GitHub Actions workflow file by App Spaces.
-   ```json
-   "tags": {
-      "value": "${AZURE_TAGS}"
-    }
-   ```
-3. Add support for resource group and tags in your main bicep file to read the value being set by App Spaces.
-   ```bicep
-   param resourceGroupName string = ''
-   param tags string = ''
-   ```
-4. Combine the default tags set by Azd with those being set by App Spaces. Replace _tags initialization_ in your main bicep file with the following -
-   ````bicep
-   var baseTags = { 'azd-env-name': environmentName }
-   var updatedTags = union(empty(tags) ? {} : base64ToJson(tags), baseTags)
-   Make sure to use "updatedTags" when assigning "tags" to resource group created in your bicep file and update the other resources to use "baseTags" instead of "tags". For example -
-   ```json
-   resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-     name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourcesResourceGroups}${environmentName}'
-     location: location
-     tags: updatedTags
-   }
-   ````
+In Azure, navigate to the Application Insights deployed by `azd`.
 
-#### Running locally
+![Tracing screenshot](docs/transaction-tracing.png)
 
-Optionally set up a `local.settings.json` file:
+To see any exceptions and server errors, navigate to the "Investigate -> Failures" blade and use the filtering tools to locate a specific exception. You can see stack traces on the right-hand side.
+
+### Clean up resources
+
+Run `azd down`
+
+## Running locally for Dev and Debug
+
+Set up a `local.settings.json` file:
 ``` json
 {
     "Logging": {
@@ -194,7 +152,6 @@ Optionally set up a `local.settings.json` file:
     "AllowedHosts": "*",
     "AZURE_CLIENT_ID": "",
     "APPLICATIONINSIGHTS_CONNECTION_STRING": "",
-    "AZURE_KEY_VAULT_ENDPOINT": "",
     "AZURE_STORAGE_BLOB_ENDPOINT": "",
     "AZURE_STORAGE_CONTAINER": "content",
     "AZURE_SEARCH_SERVICE_ENDPOINT": "",
@@ -208,37 +165,13 @@ Optionally set up a `local.settings.json` file:
 ```
 
 1. Run `azd auth login`
-2. After the application deploys, set the environment variable `AZURE_KEY_VAULT_ENDPOINT`. You can find the value in the _.azure/YOUR-ENVIRONMENT-NAME/.env_ file, the `local.settings.json` file, or the Azure portal.
-3. Run the following .NET CLI command to start the ASP.NET Core Minimal API server (client host):
+1. Run the following .NET CLI command to start the ASP.NET Core Minimal API server (client host):
 
    ```dotnetcli
    dotnet run --project ./app/backend/MinimalApi.csproj --urls=http://localhost:7181/
    ```
 
 Navigate to <http://localhost:7181>, and test out the app.
-
-#### Clean up resources
-
-Run `azd down`
-
-### Using the app
-
-- In Azure: navigate to the Azure App Service deployed by `azd`. The URL is printed out when `azd` completes (as "Endpoint"), or you can find it in the Azure portal.
-- When running locally, navigate to <http://localhost:7181> for the client app and <http://localhost:7181/swagger> for the Open API server page.
-
-Once in the web app:
-
-- Try different topics in **Chat** context. For chat, try follow up questions, clarifications, ask to simplify or elaborate on answer, etc.
-- Explore citations and sources
-- Click on the "settings" icon to try different options, tweak prompts, etc.
-
-### Tracing and Troubleshooting
-
-In Azure, navigate to the Application Insights deployed by `azd`.
-
-![Tracing screenshot](docs/transaction-tracing.png)
-
-To see any exceptions and server errors, navigate to the "Investigate -> Failures" blade and use the filtering tools to locate a specific exception. You can see stack traces on the right-hand side.
 
 ## Considerations
 
@@ -252,11 +185,30 @@ This example is designed to be a starting point for your own production applicat
 
 ## Resources
 
-- [https://github.com/Azure-Samples/azure-search-openai-demo-csharp](https://github.com/Azure-Samples/azure-search-openai-demo-csharp)
+### Base sample app used
+This project started with the sample application below:
+
+[https://github.com/Azure-Samples/azure-search-openai-demo-csharp](https://github.com/Azure-Samples/azure-search-openai-demo-csharp)
+
+Noteable variations and notes:
+* Deploys to App Service instead of Container App
+* Updated Azure OpenAI deployments (GPT-4o, text-embedding-3-small)
+* Upgraded to Doc Intelligence v4.0 preview SDK for Word document support
+* Added Cosmos DB for new feature support:
+   * Chat Session history by user
+   * Pinned queries by user
+* Removed unnecessary features:
+   * MAUI client support
+   * Voice Chat client interface
+   * GPT-4V and vision support
+   * test projects
+   * unnecessary SharedWebComponents (refactored shared library)
+
+> [!NOTE]<br>
+> The PDF documents used in this demo contain information generated using a language model (Azure OpenAI Service). The information contained in these documents is only for demonstration purposes and does not reflect the opinions or beliefs of Microsoft. Microsoft makes no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability or availability with respect to the information contained in this document. All rights reserved to Microsoft.
+
+### Other Resources
 - [Revolutionize your Enterprise Data with ChatGPT: Next-gen Apps w/ Azure OpenAI and Cognitive Search](https://aka.ms/entgptsearchblog)
 - [Azure AI Search](https://learn.microsoft.com/azure/search/search-what-is-azure-search)
 - [Azure OpenAI Service](https://learn.microsoft.com/azure/cognitive-services/openai/overview)
 - [`Azure.AI.OpenAI` NuGet package](https://www.nuget.org/packages/Azure.AI.OpenAI)
-
-> [!NOTE]<br>
-> The PDF documents used in this demo contain information generated using a language model (Azure OpenAI Service). The information contained in these documents is only for demonstration purposes and does not reflect the opinions or beliefs of Microsoft. Microsoft makes no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability or availability with respect to the information contained in this document. All rights reserved to Microsoft.
