@@ -27,8 +27,6 @@ public sealed partial class AzureSearchEmbedService(
     DocumentIntelligenceClient documentIntelligenceClient,
     //DocumentAnalysisClient documentAnalysisClient,
     BlobContainerClient corpusContainerClient,
-    IComputerVisionService? computerVisionService = null,
-    bool includeImageEmbeddingsField = false,
     ILogger<AzureSearchEmbedService>? logger = null) : IEmbedService
 {
     [GeneratedRegex("[^0-9a-zA-Z_-]")]
@@ -75,43 +73,7 @@ public sealed partial class AzureSearchEmbedService(
 
             throw;
         }
-    }
-
-    public async Task<bool> EmbedImageBlobAsync(
-        Stream imageStream,
-        string imageUrl,
-        string imageName,
-        CancellationToken ct = default)
-    {
-        if (includeImageEmbeddingsField == false || computerVisionService is null)
-        {
-            throw new InvalidOperationException(
-                "Computer Vision service is required to include image embeddings field, please enable GPT_4V support");
-        }
-
-        var embeddings = await computerVisionService.VectorizeImageAsync(imageUrl, ct);
-
-        // id can only contain letters, digits, underscore (_), dash (-), or equal sign (=).
-        var imageId = MatchInSetRegex().Replace(imageUrl, "_").TrimStart('_');
-        // step 3
-        // index image embeddings
-        var indexAction = new IndexDocumentsAction<SearchDocument>(
-            IndexActionType.MergeOrUpload,
-            new SearchDocument
-            {
-                ["id"] = imageId,
-                ["content"] = imageName,
-                ["category"] = "image",
-                ["imageEmbedding"] = embeddings.vector,
-                ["sourcefile"] = imageUrl,
-            });
-
-        var batch = new IndexDocumentsBatch<SearchDocument>();
-        batch.Actions.Add(indexAction);
-        await searchClient.IndexDocumentsAsync(batch, cancellationToken: ct);
-
-        return true;
-    }
+    }    
 
     public async Task CreateSearchIndexAsync(string searchIndexName, CancellationToken ct = default)    
     {
@@ -161,21 +123,7 @@ public sealed partial class AzureSearchEmbedService(
 
         logger?.LogInformation(
             "Creating '{searchIndexName}' search index", searchIndexName);
-
-        if (includeImageEmbeddingsField)
-        {
-            if (computerVisionService is null)
-            {
-                throw new InvalidOperationException("Computer Vision service is required to include image embeddings field");
-            }
-
-            index.Fields.Add(new SearchField("imageEmbedding", SearchFieldDataType.Collection(SearchFieldDataType.Single))
-            {
-                VectorSearchDimensions = computerVisionService.Dimension,
-                IsSearchable = true,
-                VectorSearchProfileName = vectorSearchProfile,
-            });
-        }
+        
         await searchIndexClient.CreateIndexAsync(index);
     }
 

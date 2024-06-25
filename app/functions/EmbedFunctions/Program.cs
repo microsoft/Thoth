@@ -96,8 +96,6 @@ var host = new HostBuilder()
             searchIndexClient: searchIndexClient,
             documentIntelligenceClient: documentClient,
             corpusContainerClient: corpusContainer,
-            computerVisionService: null,
-            includeImageEmbeddingsField: false,
             logger: logger);
         });
     })

@@ -50,7 +50,7 @@ public class ReadRetrieveReadChatServiceTest
 
         var history = new ChatMessage[]
         {
-            new ChatMessage("What is included in my Northwind Health Plus plan that is not in standard?", "user"),
+            new ChatMessage("What is included in my Northwind Health Plus plan that is not in standard?", "user", 0),
         };
         var overrides = new RequestOverrides
         {

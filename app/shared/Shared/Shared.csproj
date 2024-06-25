@@ -15,6 +15,8 @@
     <PackageReference Include="Azure.Search.Documents" />
     <PackageReference Include="Azure.Storage.Blobs" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" />
+    <PackageReference Include="Microsoft.SemanticKernel" />
     <PackageReference Include="PdfSharpCore" />
   </ItemGroup>
 

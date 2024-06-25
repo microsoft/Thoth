@@ -1,9 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Azure.Core;
+using Blazor.Serialization.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
+using System.Text.Json;
+
+
 
 namespace MinimalApi.Services;
 #pragma warning disable SKEXP0011 // Mark members as static
@@ -13,14 +17,12 @@ public class ReadRetrieveReadChatService
     private readonly ISearchService _searchClient;
     private readonly Kernel _kernel;
     private readonly IConfiguration _configuration;
-    private readonly IComputerVisionService? _visionService;
     private readonly TokenCredential? _tokenCredential;
 
     public ReadRetrieveReadChatService(
         ISearchService searchClient,
         OpenAIClient client,
         IConfiguration configuration,
-        IComputerVisionService? visionService = null,
         TokenCredential? tokenCredential = null)
     {
         _searchClient = searchClient;
@@ -52,7 +54,6 @@ public class ReadRetrieveReadChatService
 
         _kernel = kernelBuilder.Build();
         _configuration = configuration;
-        _visionService = visionService;
         _tokenCredential = tokenCredential;
     }
 
@@ -168,6 +169,26 @@ public class ReadRetrieveReadChatService
         var ans = answerObject.GetProperty("answer").GetString() ?? throw new InvalidOperationException("Failed to get answer");
         var thoughts = answerObject.GetProperty("thoughts").GetString() ?? throw new InvalidOperationException("Failed to get thoughts");
 
+        int totalTokens = 0;
+        var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };        
+
+
+        if (answer.Metadata != null)
+        {
+            var usageDict = answer.Metadata["Usage"];
+            if (usageDict != null)
+            {
+                string strJson = JsonSerializer.Serialize(usageDict, jsonOptions);
+
+                JsonDocument doc = JsonDocument.Parse(strJson);
+                JsonElement root = doc.RootElement;
+                if (root.TryGetProperty("TotalTokens", out JsonElement totalTokensElement))
+                {
+                    totalTokens = totalTokensElement.GetInt32();
+                }                
+            }
+        }
+
         // step 4
         // add follow up questions if requested
         if (overrides?.SuggestFollowupQuestions is true)
@@ -202,11 +223,11 @@ public class ReadRetrieveReadChatService
             followUpQuestionList = followUpQuestionsList.ToArray();
         }
 
-        var responseMessage = new ResponseMessage("assistant", ans);
+        var responseMessage = new ResponseMessage("assistant", ans, totalTokens);
         var responseContext = new ResponseContext(
             DataPointsContent: documentContentList.Select(x => new SupportingContentRecord(x.Title, x.Content)).ToArray(),
             FollowupQuestions: followUpQuestionList ?? Array.Empty<string>(),
-            Thoughts: new[] { new Thoughts("Thoughts", thoughts) });
+            Thoughts: [new Thoughts("Thoughts", thoughts)]);
 
         var choice = new ResponseChoice(
             Index: 0,
@@ -214,6 +235,6 @@ public class ReadRetrieveReadChatService
             Context: responseContext,
             CitationBaseUrl: _configuration.ToCitationBaseUrl());
 
-        return new ChatAppResponse(new[] { choice });
+        return new ChatAppResponse([choice]);
     }
 }

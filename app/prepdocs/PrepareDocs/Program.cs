@@ -200,18 +200,7 @@ static async ValueTask UploadBlobsAndCreateIndexAsync(
         await blobClient.DownloadToAsync(stream);
         await embeddingService.EmbedDocumentBlobAsync(stream, fileName);
     }
-    // TODO: add same logic as with PDFs
-    // if it's an img (end with .png/.jpg/.jpeg), upload it to blob storage and embed it.
-    //else if (Path.GetExtension(fileName).Equals(".png", StringComparison.OrdinalIgnoreCase) ||
-    //    Path.GetExtension(fileName).Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
-    //    Path.GetExtension(fileName).Equals(".jpeg", StringComparison.OrdinalIgnoreCase))
-    //{
-    //    using var stream = File.OpenRead(fileName);
-    //    var blobName = BlobNameFromFilePage(fileName);
-    //    var imageName = Path.GetFileNameWithoutExtension(blobName);
-    //    var url = await UploadBlobAsync(fileName, blobName, container);
-    //    await embeddingService.EmbedImageBlobAsync(stream, url, imageName);
-    //}
+    // TODO: add same logic as with PDFs    
     //else
     //{
     //    var blobName = BlobNameFromFilePage(fileName);

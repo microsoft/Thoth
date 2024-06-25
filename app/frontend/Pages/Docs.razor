@@ -1,0 +1,102 @@
+﻿@page "/documents"
+
+<PageTitle>Documents</PageTitle>
+
+<MudGrid Justify="Justify.Center">    
+    <MudItem xs="12">
+        <MudTable Items="@_documents" Dense="true" Hover="true" Bordered="true"
+                  FixedHeader="true" Filter="OnFilter" Elevation="4">
+            <ToolBarContent>
+                @if (_isLoadingDocuments)
+                {
+                    <MudText Typo="Typo.h5">
+                        Loading Documents
+                    </MudText>
+                    <MudProgressCircular Indeterminate="true"
+                                         Size="Size.Small" Class="ml-2" />
+                }
+                else
+                {
+                    <MudText Typo="Typo.h5">
+                        Existing Documents
+                    </MudText>
+                }
+                <MudSpacer />
+                <MudTextField @bind-Value="@_filter" Placeholder="Filter" Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
+                              DebounceInterval="500" Class="mt-0">
+                </MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh Style="text-align:center">
+                    Preview
+                </MudTh>
+                <MudTh Style="text-align:center">
+                    <MudTableSortLabel SortBy="new Func<DocumentResponse, object>(d => d.Status)">
+                        Status
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<DocumentResponse, object>(d => d.Name)">
+                        Name
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>Content Type</MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<DocumentResponse, object>(d => d.Size)">
+                        Size
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<DocumentResponse, object>(d => d.LastModified.GetValueOrDefault())">
+                        Last Modified
+                    </MudTableSortLabel>
+                </MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Preview" Style="text-align:center">
+                    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Pageview"
+                            Size="Size.Small" OnClick="@(() => OnShowDocumentAsync(context))" />
+                </MudTd>
+                <MudTd DataLabel="Status" Style="text-align:center">
+                @{
+                    switch (context.Status)
+                    {
+                        case DocumentProcessingStatus.Failed:
+                            <MudIcon Color="Color.Error" Icon="@Icons.Material.Filled.Close" />
+                            break;
+                        case DocumentProcessingStatus.Succeeded:
+                            <MudIcon Color="Color.Success" Icon="@Icons.Material.Filled.Check" />
+                            break;
+                        default:
+                            <MudIcon Color="Color.Warning" Icon="@Icons.Material.Filled.QuestionMark" />
+                            break;
+                    }
+                }
+                </MudTd>
+                <MudTd DataLabel="Name">
+                    <strong>@context.Name</strong>
+                </MudTd>
+                <MudTd DataLabel="Content Type">
+                    <code>@context.ContentType</code>
+                </MudTd>
+                <MudTd DataLabel="Size">
+                    <MudChip Size="Size.Small">
+                        @context.Size.ToHumanReadableSize()
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Last Modified">
+                    @($"{context.LastModified.GetValueOrDefault():G}")
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+    <MudScrollToTop Selector="#uploads"
+                    VisibleCssClass="visible absolute"
+                    HiddenCssClass="invisible">
+        <MudFab Color="Color.Primary" IconSize="Size.Large" StartIcon="@Icons.Material.Filled.ArrowUpward" />
+    </MudScrollToTop>
+</MudGrid>
