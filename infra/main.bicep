@@ -419,6 +419,8 @@ module database 'core/storage/cosmosdb-account.bicep' = {
   params: {
     accountName: !empty(cosmosDbAccountName) ? cosmosDbAccountName : '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
     location: location
+    databaseName: 'chatdb'
+    containerName: 'chathistory'
   }
 }
 
