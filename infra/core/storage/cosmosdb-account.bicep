@@ -41,49 +41,7 @@ resource cosmos_account 'Microsoft.DocumentDB/databaseAccounts@2024-02-15-previe
       }
     ] : []
   }
-
-  resource cosmos_data_contributor_role 'sqlRoleDefinitions@2024-02-15-preview' = {
-    name: '00000000-0000-0000-0000-000000000002'
-    properties: {
-      roleName: 'Cosmos DB Built-in Data Contributor'
-      type: 'BuiltInRole'
-      assignableScopes: [
-        cosmos_account.id
-      ]
-      permissions: [
-        {
-          dataActions: [
-            'Microsoft.DocumentDB/databaseAccounts/readMetadata'
-            'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/*'
-            'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/*'
-          ]
-          notDataActions: []
-        }
-      ]
-    }
-  }
-
-  resource cosmos_data_reader_role 'sqlRoleDefinitions@2024-02-15-preview' = {
-    name: '00000000-0000-0000-0000-000000000001'
-    properties: {
-      roleName: 'Cosmos DB Built-in Data Reader'
-      type: 'BuiltInRole'
-      assignableScopes: [
-        cosmos_account.id
-      ]
-      permissions: [
-        {
-          dataActions: [
-            'Microsoft.DocumentDB/databaseAccounts/readMetadata'
-            'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/executeQuery'
-            'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/readChangeFeed'
-            'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/read'
-          ]
-          notDataActions: []
-        }
-      ]
-    }
-  }
+  
 }
 
 resource cosmos_database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-02-15-preview' = {
