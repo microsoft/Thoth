@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using MinimalApi.Models;
+
 namespace MinimalApi.Extensions;
 
 internal static class WebApplicationExtensions
@@ -13,6 +15,12 @@ internal static class WebApplicationExtensions
 
         // Long-form chat w/ contextual history endpoint
         api.MapPost("chat", OnPostChatAsync);
+
+        // Get chat sessions
+        api.MapGet("chatsessions", OnGetChatSessionsAsync);
+
+        // Get A chat session
+        api.MapGet("chatsessions/{sessionId}", OnGetChatSessionAsync);
 
         // Upload a document
         api.MapPost("documents", OnPostDocumentAsync);
@@ -135,5 +143,31 @@ internal static class WebApplicationExtensions
                             : @default;
             }
         }
-    }    
+    }
+
+    private static async Task<IResult> OnGetChatSessionsAsync(
+        [FromServices] ILogger<ChatHistoryService> logger,
+        [FromServices] IChatHistoryService chatHistory,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Get chat history sessions");
+
+        var sessions = await chatHistory.GetChatHistorySessions();
+        var response = sessions.Select(s => new ChatSessionListResponse { SessionId = s.SessionId, Title = s.Title });
+
+        return TypedResults.Ok(response);
+    }
+
+    private static async Task<IResult> OnGetChatSessionAsync(
+        [FromRoute] string sessionId,
+        [FromServices] ILogger<ChatHistoryService> logger,
+        [FromServices] IChatHistoryService chatHistory,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation($"Get chat history for session with id: {sessionId}");
+
+        var response = await chatHistory.GetChatHistorySession(sessionId);
+
+        return TypedResults.Ok(response);
+    }
 }

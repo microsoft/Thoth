@@ -17,14 +17,12 @@ public class ReadRetrieveReadChatService
     private readonly ISearchService _searchClient;
     private readonly Kernel _kernel;
     private readonly IConfiguration _configuration;
-    private readonly IComputerVisionService? _visionService;
     private readonly TokenCredential? _tokenCredential;
 
     public ReadRetrieveReadChatService(
         ISearchService searchClient,
         OpenAIClient client,
         IConfiguration configuration,
-        IComputerVisionService? visionService = null,
         TokenCredential? tokenCredential = null)
     {
         _searchClient = searchClient;
@@ -56,7 +54,6 @@ public class ReadRetrieveReadChatService
 
         _kernel = kernelBuilder.Build();
         _configuration = configuration;
-        _visionService = visionService;
         _tokenCredential = tokenCredential;
     }
 
