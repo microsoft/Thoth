@@ -56,9 +56,9 @@ public sealed partial class MainLayout
 
     private void OnChatHistoryClicked() => _chatHistoryDrawer = !_chatHistoryDrawer;
 
-    protected void OnItemClick(EventArgs e, int chatId)
+    protected void OnItemClick(EventArgs e, string chatId)
     {
-        _navigationManager.NavigateTo($"/chat?{nameof(ChatHistorySession.SessionId)}={chatId}");
+        _navigationManager.NavigateTo($"/chat?{nameof(ChatHistorySessionUI.Id)}={chatId}");
     }
 
     protected void OnDeleteSessionClick(EventArgs e, string chatId)
@@ -82,4 +82,4 @@ public sealed partial class MainLayout
     }
 }
 
-public record Chat(string Name, int Id, DateTime TimeStamp);
+public record Chat(string Name, string Id, DateTime TimeStamp);

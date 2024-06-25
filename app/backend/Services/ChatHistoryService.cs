@@ -1,21 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 #pragma warning disable SKEXP0003 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable SKEXP0011 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Azure.Core;
-using Azure.Identity;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 public class ChatHistoryService : IChatHistoryService
 {
     private static string s_collection = "chathistory";
-    private readonly IMemoryStore _memoryStore;
-    private readonly Kernel _kernel;
+	private readonly IMemoryStore _memoryStore;
+	private readonly Kernel _kernel;
     private readonly SemanticTextMemory _textMemory;
 
     public ChatHistoryService(
@@ -57,7 +55,7 @@ public class ChatHistoryService : IChatHistoryService
         await EnsureCollectionAsync();
         var lookup = await _textMemory.GetAsync(s_collection, sessionId.ToString());
         var chatHistory = JsonConvert.DeserializeObject<ChatHistory>(lookup?.Metadata.Text ?? "[]");
-        return new() { SessionId = sessionId, ChatHistory = chatHistory };
+        return new() { SessionId = sessionId, ChatHistory = chatHistory! };
     }
 
     public Task<IEnumerable<ChatHistorySession>> GetChatHistorySessions()
@@ -76,3 +74,4 @@ public class ChatHistoryService : IChatHistoryService
 
 #pragma warning restore SKEXP0003 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning restore SKEXP0011 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.

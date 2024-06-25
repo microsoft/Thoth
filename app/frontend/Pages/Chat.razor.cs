@@ -34,7 +34,7 @@ public sealed partial class Chat
     }
 
     [Parameter]
-    [SupplyParameterFromQuery(Name = nameof(ChatHistorySession.Id))]
+    [SupplyParameterFromQuery(Name = nameof(ChatHistorySessionUI.Id))]
     public string? ChatSessionId { get; set; }
     [Inject]
     internal ChatHistoryService ChatHistoryService { get; set; }
@@ -139,8 +139,8 @@ public sealed partial class Chat
     {
         var newChatHistorySession = ChatHistoryService.AddChatHistorySession(_questionAndAnswerMap);
 
-        ChatSessionId = newChatHistorySession.SessionId;
-        NavigationManager.NavigateTo($"/chat?{nameof(ChatHistorySession.SessionId)}={newChatHistorySession.SessionId}");
+        ChatSessionId = newChatHistorySession.Id;
+        NavigationManager.NavigateTo($"/chat?{nameof(ChatHistorySession.SessionId)}={newChatHistorySession.Id}");
     }
 
     private void OnPinQuestion(string question, DateTime askedOn)

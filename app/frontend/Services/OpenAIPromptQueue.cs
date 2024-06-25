@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net.Http;
+
 namespace ClientApp.Services;
 
 public sealed class OpenAIPromptQueue(
