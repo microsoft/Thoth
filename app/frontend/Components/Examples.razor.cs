@@ -7,21 +7,16 @@ namespace ClientApp.Components;
 public sealed partial class Examples
 {
     [Inject]
-    public PinnedQueriesService PinnedQueriesService { get; set; }
+	public ApiClient ApiClient { get; set; }
     [Parameter, EditorRequired] public required string Message { get; set; }
     [Parameter, EditorRequired] public EventCallback<string> OnExampleClicked { get; set; }
 
-    public UserQuestion[] PinnedQueries { get; set; } = new UserQuestion[3];
+    public PinnedQuery[] PinnedQueries { get; set; } = [];
 
-    protected override void OnInitialized()
+    protected async override Task OnInitializedAsync()
     {
-        PinnedQueriesService.OnChange += OnChangeHandlerAsync;
-        PinnedQueries = PinnedQueriesService.GetPinnedQueries().ToArray();
-    }
-
-    public void Dispose()
-    {
-        PinnedQueriesService.OnChange -= OnChangeHandlerAsync;
+		var items = await ApiClient.GetPinnedQueriesAsync();
+        PinnedQueries = items.ToArray();
     }
 
     private async void OnChangeHandlerAsync()

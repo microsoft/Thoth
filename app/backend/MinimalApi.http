@@ -68,3 +68,21 @@ GET {{MinimalApi_HostAddress}}/api/chatsessions/test1
 GET {{MinimalApi_HostAddress}}/api/chatsessions
 
 ###
+
+
+GET {{MinimalApi_HostAddress}}/api/pinnedqueries
+
+###
+
+POST {{MinimalApi_HostAddress}}/api/pinnedqueries
+content-type: application/json
+
+{
+  "id": "pin2",
+  "userId": "localuser",
+  "query": {
+    "question": "What is the meaning of life?",
+    "askedOn": "2024-06-26T19:01:03.462Z"
+  }
+}
+###

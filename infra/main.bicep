@@ -426,7 +426,26 @@ module database 'core/storage/cosmosdb-account.bicep' = {
     accountName: !empty(cosmosDbAccountName) ? cosmosDbAccountName : '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
     location: location
     databaseName: 'chatdb'
+  }
+}
+
+module history_container 'core/storage/cosmosdb-container.bicep' = {
+  name: 'history_container'
+  scope: storageResourceGroup
+  params: {
+    parentAccountName: database.outputs.accountName
+    parentDatabaseName: 'chatdb'
     containerName: 'chathistory'
+  }
+}
+
+module pinned_container 'core/storage/cosmosdb-container.bicep' = {
+  name: 'pinned_container'
+  scope: storageResourceGroup
+  params: {
+    parentAccountName: database.outputs.accountName
+    parentDatabaseName: 'chatdb'
+    containerName: 'pinnedqueries'
   }
 }
 
