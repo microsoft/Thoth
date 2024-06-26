@@ -2,30 +2,32 @@
 
 using Microsoft.Azure.Cosmos;
 using Container = Microsoft.Azure.Cosmos.Container;
-using MinimalApi.Models;
+using Shared.Models;
+using System.Net;
 
 namespace MinimalApi.Services;
 
 public class CosmosChatHistoryService(Container container) : IChatHistoryService
-{	
+{
 	private readonly Container _container = container;
 
 	public async Task<ChatHistorySession> UpsertChatHistorySessionAsync(ChatHistorySession chatHistory)
-    {		
+	{
 		var response = await _container.UpsertItemAsync<ChatHistorySession>(chatHistory);
-		if (response.StatusCode == System.Net.HttpStatusCode.OK)
+
+		if (response.StatusCode == HttpStatusCode.Created || response.StatusCode == HttpStatusCode.OK)
 			return response.Resource;
 
 		throw new CosmosChatHistoryServiceException($"Error upserting history item in CosmosClient. Status Code: {response.StatusCode}");
-    }
+	}
 
-    public async Task DeleteChatHistorySessionAsync(string sessionId)
-    {
+	public async Task DeleteChatHistorySessionAsync(string sessionId)
+	{
 		await _container.DeleteItemAsync<ChatHistorySession>(sessionId, new PartitionKey(sessionId));
-    }
+	}
 
-    public async Task<ChatHistorySession> GetChatHistorySessionAsync(string sessionId)
-    {
+	public async Task<ChatHistorySession> GetChatHistorySessionAsync(string sessionId)
+	{
 		try
 		{
 			var item = await _container.ReadItemAsync<ChatHistorySession>(sessionId, new PartitionKey(sessionId));
@@ -38,10 +40,10 @@ public class CosmosChatHistoryService(Container container) : IChatHistoryService
 
 			throw new CosmosChatHistoryServiceException("Error fetching history item from CosmosClient", cex);
 		}
-    }
+	}
 
-    public async IAsyncEnumerable<ChatHistorySession> GetChatHistorySessionsAsync(string userId)
-    {
+	public async IAsyncEnumerable<ChatHistorySession> GetChatHistorySessionsAsync(string userId)
+	{
 		var query = new QueryDefinition(
 			query: $"SELECT * FROM {_container.Id} c WHERE c.userId = @userid"
 		)
@@ -50,12 +52,12 @@ public class CosmosChatHistoryService(Container container) : IChatHistoryService
 		using FeedIterator<ChatHistorySession> feed = _container.GetItemQueryIterator<ChatHistorySession>(query);
 		while (feed.HasMoreResults)
 		{
-			foreach(var session in await feed.ReadNextAsync())
+			foreach (var session in await feed.ReadNextAsync())
 			{
 				yield return session;
 			}
 		}
-    }
+	}
 }
 
 public class CosmosChatHistoryServiceException : Exception

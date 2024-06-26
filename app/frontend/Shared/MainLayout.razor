@@ -65,16 +65,16 @@
             </MudDrawerHeader>
             <MudDivider Style="flex-grow: 0;" />
             <MudList Clickable="true" Dense="true">
-                @foreach (var chat in _chatHistoryService.GetChatHistorySessions().OrderByDescending(c => c.EndTime))
+                @foreach (var chat in ChatHistorySessionStubs.OrderByDescending(c => c.LastUpdated))
                 {
                     <MudListItem OnClick="@(e => OnItemClick(e, chat.Id))">
                         <div class="d-flex justify-space-between">
                             <div>
-                                @chat.Name
+                                @chat.Title
                             </div>
                             <div>
                                 <MudIconButton Icon="@Icons.Outlined.Delete" Color="Color.Inherit" Size="Size.Small"
-                                               Title="Delete history session." OnClick="@((e) => OnDeleteSessionClick(e, @chat.Id))" />
+                                               Title="Delete history session." OnClick="@(async (e) => await OnDeleteSessionClickAsync(e, @chat.Id))" />
                             </div>
                         </div>
                     </MudListItem>

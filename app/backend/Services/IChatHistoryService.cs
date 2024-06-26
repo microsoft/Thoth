@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using MinimalApi.Models;
+using Shared.Models;
 
 public interface IChatHistoryService
 {

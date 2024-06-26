@@ -12,6 +12,13 @@ builder.Services.Configure<AppSettings>(
 builder.Services.AddHttpClient<ApiClient>(client =>
 {
     client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+
+	if (!builder.HostEnvironment.BaseAddress.Contains("localhost"))
+		return;
+
+	var username = builder.Configuration.GetValue<string>("username");
+	username = string.IsNullOrWhiteSpace(username) ? "local-developer" : username;
+	client.DefaultRequestHeaders.Add("X-MS-CLIENT-PRINCIPAL-ID", username);
 });
 builder.Services.AddScoped<OpenAIPromptQueue>();
 builder.Services.AddLocalStorageServices();
@@ -21,7 +28,6 @@ builder.Services.AddSpeechRecognitionServices();
 builder.Services.AddSingleton<ITextToSpeechPreferencesListener, TextToSpeechPreferencesListenerService>();
 builder.Services.AddMudServices();
 builder.Services.AddTransient<IPdfViewer, WebPdfViewer>();
-builder.Services.AddSingleton<ChatHistoryService>();
 builder.Services.AddSingleton<PinnedQueriesService>();
 
 await JSHost.ImportAsync(

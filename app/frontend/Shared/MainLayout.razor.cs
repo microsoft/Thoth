@@ -1,85 +1,82 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+
 namespace ClientApp.Shared;
 
 public sealed partial class MainLayout
 {
+	[Inject]
+	private NavigationManager _navigationManager { get; set; }
+	[Inject]
+	private ApiClient _apiClient { get; set; }
+	private readonly MudTheme _theme = new();
+	private bool _drawerOpen = true;
+	private bool _chatHistoryDrawer = false;
+	private bool _settingsOpen = false;
+	private SettingsPanel? _settingsPanel;
+	private MudListItem? _selectedItem = null;
 
-    [Inject]
-    private NavigationManager _navigationManager { get; set; }
-    [Inject]
-    private ChatHistoryService _chatHistoryService { get; set; }
-    private readonly MudTheme _theme = new();
-    private bool _drawerOpen = true;
-    private bool _chatHistoryDrawer = false;
-    private bool _settingsOpen = false;
-    private SettingsPanel? _settingsPanel;
-    private MudListItem? _selectedItem = null;
-   
+	public IEnumerable<ChatSessionListResponse> ChatHistorySessionStubs { get; set; } = [];
 
-    private bool _isDarkTheme
-    {
-        get => LocalStorage.GetItem<bool>(StorageKeys.PrefersDarkTheme);
-        set => LocalStorage.SetItem<bool>(StorageKeys.PrefersDarkTheme, value);
-    }
 
-    private bool _isReversed
-    {
-        get => LocalStorage.GetItem<bool?>(StorageKeys.PrefersReversedConversationSorting) ?? false;
-        set => LocalStorage.SetItem<bool>(StorageKeys.PrefersReversedConversationSorting, value);
-    }
+	private bool _isDarkTheme
+	{
+		get => LocalStorage.GetItem<bool>(StorageKeys.PrefersDarkTheme);
+		set => LocalStorage.SetItem<bool>(StorageKeys.PrefersDarkTheme, value);
+	}
 
-    private bool _isRightToLeft =>
-        Thread.CurrentThread.CurrentUICulture is { TextInfo.IsRightToLeft: true };
+	private bool _isReversed
+	{
+		get => LocalStorage.GetItem<bool?>(StorageKeys.PrefersReversedConversationSorting) ?? false;
+		set => LocalStorage.SetItem<bool>(StorageKeys.PrefersReversedConversationSorting, value);
+	}
 
-    [Inject] public required NavigationManager Nav { get; set; }
-    [Inject] public required ILocalStorageService LocalStorage { get; set; }
-    [Inject] public required IDialogService Dialog { get; set; }
+	private bool _isRightToLeft =>
+		Thread.CurrentThread.CurrentUICulture is { TextInfo.IsRightToLeft: true };
 
-    private bool SettingsDisabled => new Uri(Nav.Uri).Segments.LastOrDefault() switch
-    {
-        "ask" or "chat" => false,
-        _ => true
-    };
+	[Inject] public required NavigationManager Nav { get; set; }
+	[Inject] public required ILocalStorageService LocalStorage { get; set; }
+	[Inject] public required IDialogService Dialog { get; set; }
 
-    private bool SortDisabled => new Uri(Nav.Uri).Segments.LastOrDefault() switch
-    {
-        "voicechat" or "chat" => false,
-        _ => true
-    };
+	private bool SettingsDisabled => new Uri(Nav.Uri).Segments.LastOrDefault() switch
+	{
+		"ask" or "chat" => false,
+		_ => true
+	};
 
-    private void OnMenuClicked() => _drawerOpen = !_drawerOpen;
+	private bool SortDisabled => new Uri(Nav.Uri).Segments.LastOrDefault() switch
+	{
+		"voicechat" or "chat" => false,
+		_ => true
+	};
 
-    private void OnThemeChanged() => _isDarkTheme = !_isDarkTheme;
+	private void OnMenuClicked() => _drawerOpen = !_drawerOpen;
 
-    private void OnIsReversedChanged() => _isReversed = !_isReversed;
+	private void OnThemeChanged() => _isDarkTheme = !_isDarkTheme;
 
-    private void OnChatHistoryClicked() => _chatHistoryDrawer = !_chatHistoryDrawer;
+	private void OnIsReversedChanged() => _isReversed = !_isReversed;
 
-    protected void OnItemClick(EventArgs e, string chatId)
-    {
-        _navigationManager.NavigateTo($"/chat?{nameof(ChatHistorySessionUI.Id)}={chatId}");
-    }
+	private void OnChatHistoryClicked() => _chatHistoryDrawer = !_chatHistoryDrawer;
 
-    protected void OnDeleteSessionClick(EventArgs e, string chatId)
-    {
-        _chatHistoryService.DeleteChatHistorySession(chatId);
-    }
+	protected void OnItemClick(EventArgs e, string chatId)
+	{
+		_navigationManager.NavigateTo($"/chat?{nameof(ChatHistorySession.Id)}={chatId}");
+	}
 
-    protected override void OnInitialized()
-    {
-        _chatHistoryService.OnChange += OnChangeHandlerAsync;
-    }
+	protected async Task OnDeleteSessionClickAsync(EventArgs e, string chatId)
+	{
+		await _apiClient.DeleteChatHistorySessionAsync(chatId);
+	}
 
-    public void Dispose()
-    {
-        _chatHistoryService.OnChange -= OnChangeHandlerAsync;
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		ChatHistorySessionStubs = await _apiClient.GetChatHistorySessionsAsync();
+	}
 
-    private async void OnChangeHandlerAsync()
-    {
-        await InvokeAsync(StateHasChanged);
-    }
+	protected override async Task OnParametersSetAsync()
+	{
+		ChatHistorySessionStubs = await _apiClient.GetChatHistorySessionsAsync();
+	}
 }
 
 public record Chat(string Name, string Id, DateTime TimeStamp);
