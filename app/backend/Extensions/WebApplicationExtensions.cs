@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Primitives;
 using MinimalApi.Models;
 
 namespace MinimalApi.Extensions;
@@ -24,9 +25,6 @@ internal static class WebApplicationExtensions
 
 		// Upsert a chat session
 		api.MapPost("chatsessions/{sessionId}", OnPostChatSessionAsync);
-
-        // Upload a document
-        api.MapPost("documents", OnPostDocumentAsync);
 
         // Get all documents
         api.MapGet("documents", OnGetDocumentsAsync);        
@@ -92,22 +90,7 @@ internal static class WebApplicationExtensions
         }
 
         return Results.BadRequest();
-    }
-
-    private static async Task<IResult> OnPostDocumentAsync(
-        [FromForm] IFormFileCollection files,
-        [FromServices] AzureBlobStorageService service,
-        [FromServices] ILogger<AzureBlobStorageService> logger,
-        CancellationToken cancellationToken)
-    {
-        logger.LogInformation("Upload documents");
-
-        var response = await service.UploadFilesAsync(files, cancellationToken);
-
-        logger.LogInformation("Upload documents: {x}", response);
-
-        return TypedResults.Ok(response);
-    }
+    }    
 
     private static async IAsyncEnumerable<DocumentResponse> OnGetDocumentsAsync(
         BlobContainerClient client,
@@ -149,13 +132,17 @@ internal static class WebApplicationExtensions
     }
 
     private static async Task<IResult> OnGetChatSessionsAsync(
-        [FromServices] ILogger<ChatHistoryService> logger,
+		HttpContext context,
+		[FromServices] ILogger<ChatHistoryService> logger,
         [FromServices] IChatHistoryService chatHistory,
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Get chat history sessions");
 
-        var sessions = chatHistory.GetChatHistorySessionsAsync("philbert");
+		var header = context.Request.Headers["X-MS-CLIENT-PRINCIPAL-ID"];
+		var userName = !string.IsNullOrEmpty(header) ? header.ToString() : "localuser";
+
+		var sessions = chatHistory.GetChatHistorySessionsAsync(userName);
 		IEnumerable<ChatSessionListResponse> response = new List<ChatSessionListResponse>();
 		await foreach (var session in sessions)
 		{
@@ -166,6 +153,7 @@ internal static class WebApplicationExtensions
     }
 
     private static async Task<IResult> OnGetChatSessionAsync(
+		HttpContext context,
         [FromRoute] string sessionId,
         [FromServices] ILogger<ChatHistoryService> logger,
         [FromServices] IChatHistoryService chatHistory,
@@ -173,14 +161,19 @@ internal static class WebApplicationExtensions
     {
         logger.LogInformation($"Get chat history for session with id: {sessionId}");
 
+		var username = context.GetUserName();
 		// put try/catch here
         var response = await chatHistory.GetChatHistorySessionAsync(sessionId);
+
+		if (!response.UserId.Equals(username))
+			return Results.NotFound();
 
         return TypedResults.Ok(response);
     }
 
 	private static async Task<IResult> OnPostChatSessionAsync(
 		[FromRoute] string sessionId,
+		HttpContext context,
 		ChatHistorySession chatHistorySession,
 		[FromServices] ILogger<ChatHistoryService> logger,
 		[FromServices] IChatHistoryService chatHistory,
@@ -188,13 +181,27 @@ internal static class WebApplicationExtensions
 	{
 		logger.LogInformation($"Add or update chat history with id: {sessionId}");
 
+		var username = context.GetUserName();
+
 		if (!sessionId.Equals(chatHistorySession.Id, StringComparison.InvariantCultureIgnoreCase))
 		{
 			return Results.BadRequest();
+		}
+
+		if (!chatHistorySession.UserId.Equals(username))
+		{
+			return Results.Unauthorized();
 		}
 		// put try/catch around this instead of internal to service
 		var response = await chatHistory.UpsertChatHistorySessionAsync(chatHistorySession);
 
 		return TypedResults.Ok(response);
+	}
+
+	private static string GetUserName(this HttpContext context)
+	{
+		var header = context.Request.Headers["X-MS-CLIENT-PRINCIPAL-ID"];
+		var userName = !string.IsNullOrEmpty(header) ? header.ToString() : "localuser";
+		return userName;
 	}
 }
