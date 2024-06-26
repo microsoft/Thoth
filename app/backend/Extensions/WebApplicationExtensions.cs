@@ -300,7 +300,7 @@ internal static class WebApplicationExtensions
 		}
 
 		var response = await service.AddPinnedQueryAsync(query);
-		return TypedResults.Created();
+		return TypedResults.Created($"/api/pinnedqueries/{query.Id}", response);
 	}
 
 	private static string GetUserName(this HttpContext context)

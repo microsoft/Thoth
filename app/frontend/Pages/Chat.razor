@@ -41,7 +41,7 @@
                                     @($"Asked at {@chatInteraction.Question.AskedOn:h:mm:ss tt} on {@chatInteraction.Question.AskedOn:M/dd/yy}")
                                 </MudText>
                             </MudPaper>
-                            <button onclick="@(() => OnPinQuestion(@chatInteraction.Question.Question, @chatInteraction.Question.AskedOn))" class="mud-badge mud-badge-icon mud-badge-top right mud-elevation-0 mud-badge-overlap">
+                            <button onclick="@(async () => await OnPinQuestionAsync(@chatInteraction.Question.Question, @chatInteraction.Question.AskedOn))" class="mud-badge mud-badge-icon mud-badge-top right mud-elevation-0 mud-badge-overlap">
                                 <MudIcon Icon="@(PinIcon(@chatInteraction.Question.Question))" aria-label="pin" Variant="@Variant.Outlined"></MudIcon>
                             </button>
                           @*   <MudIconButton 

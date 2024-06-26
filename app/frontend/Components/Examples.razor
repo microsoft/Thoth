@@ -6,13 +6,13 @@
     <MudItem xs="12">
         <MudText Typo="Typo.h2" Align="Align.Center">@Message</MudText>
     </MudItem>
-    @foreach (var query in PinnedQueries.OrderByDescending(q => q.AskedOn).Take(3))
+    @foreach (var query in PinnedQueries.OrderByDescending(q => q.Query.AskedOn).Take(3))
     {
         <MudItem lg="3" xs="12">
-            <MudPaper Elevation="4" Height="12rem" onclick="@(async () => await OnClickedAsync(query.Question))"
+            <MudPaper Elevation="4" Height="12rem" onclick="@(async () => await OnClickedAsync(query.Query.Question))"
                       Class="d-flex pa-8 clickable flex-column align-center justify-center mud-width-full rounded dim">
                 <MudText Typo="Typo.h5">
-                    @query.Question
+                    @query.Query.Question
                 </MudText>
             </MudPaper>
         </MudItem>
