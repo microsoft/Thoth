@@ -12,6 +12,13 @@ builder.Services.Configure<AppSettings>(
 builder.Services.AddHttpClient<ApiClient>(client =>
 {
     client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+
+	if (!builder.HostEnvironment.BaseAddress.Contains("localhost"))
+		return;
+
+	var username = builder.Configuration["username"];
+	username = string.IsNullOrWhiteSpace(username) ? "local-developer" : username;
+	client.DefaultRequestHeaders.Add("X-MS-CLIENT-PRINCIPAL-ID", username);
 });
 builder.Services.AddScoped<OpenAIPromptQueue>();
 builder.Services.AddLocalStorageServices();
