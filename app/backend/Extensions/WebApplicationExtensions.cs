@@ -4,102 +4,111 @@ namespace MinimalApi.Extensions;
 
 internal static class WebApplicationExtensions
 {
-    internal static WebApplication MapApi(this WebApplication app)
-    {
-        var api = app.MapGroup("api");
+	internal static WebApplication MapApi(this WebApplication app)
+	{
+		var api = app.MapGroup("api");
 
-        // Long-form chat w/ contextual history endpoint
-        api.MapPost("chat", OnPostChatAsync);
+		// Long-form chat w/ contextual history endpoint
+		api.MapPost("chat", OnPostChatAsync);
 
-        // Get chat sessions
-        api.MapGet("chatsessions", OnGetChatSessionsAsync);
+		// Get chat sessions
+		api.MapGet("chatsessions", OnGetChatSessionsAsync);
 
-        // Get A chat session
-        api.MapGet("chatsessions/{sessionId}", OnGetChatSessionAsync);
+		// Get A chat session
+		api.MapGet("chatsessions/{sessionId}", OnGetChatSessionAsync);
 
 		// Upsert a chat session
 		api.MapPost("chatsessions/{sessionId}", OnPostChatSessionAsync);
 
 		api.MapDelete("chatsessions/{sessionId}", OnDeleteChatSessionAsync);
 
-        // Get all documents
-        api.MapGet("documents", OnGetDocumentsAsync);        
+		// Get all documents
+		api.MapGet("documents", OnGetDocumentsAsync);
 
-        api.MapGet("enableLogout", OnGetEnableLogout);
+		api.MapGet("enableLogout", OnGetEnableLogout);
 
-        return app;
-    }
+		return app;
+	}
 
-    private static IResult OnGetEnableLogout(HttpContext context)
-    {
-        var header = context.Request.Headers["X-MS-CLIENT-PRINCIPAL-ID"];
-        var enableLogout = !string.IsNullOrEmpty(header);
+	private static IResult OnGetEnableLogout(HttpContext context)
+	{
+		var header = context.Request.Headers["X-MS-CLIENT-PRINCIPAL-ID"];
+		var enableLogout = !string.IsNullOrEmpty(header);
 
-        return TypedResults.Ok(enableLogout);
-    }
+		return TypedResults.Ok(enableLogout);
+	}
 
-    private static async Task<IResult> OnPostChatAsync(
-        ChatRequest request,
-        ReadRetrieveReadChatService chatService,
-        CancellationToken cancellationToken)
-    {
-        if (request is { History.Length: > 0 })
-        {
-            var response = await chatService.ReplyAsync(
-                request.History, request.Overrides, cancellationToken);
+	private static async Task<IResult> OnPostChatAsync(
+		ChatRequest request,
+		ReadRetrieveReadChatService chatService,
+		CancellationToken cancellationToken)
+	{
+		try
+		{
+			if (request is { History.Length: > 0 })
+			{
+				var response = await chatService.ReplyAsync(
+					request.History, request.Overrides, cancellationToken);
 
-            return TypedResults.Ok(response);
-        }
+				return TypedResults.Ok(response);
+			}
 
-        return Results.BadRequest();
-    }    
+			return Results.BadRequest();
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine(ex);
+			throw;
+		}
 
-    private static async IAsyncEnumerable<DocumentResponse> OnGetDocumentsAsync(
-        BlobContainerClient client,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        await foreach (var blob in client.GetBlobsAsync(cancellationToken: cancellationToken))
-        {
-            if (blob is not null and { Deleted: false })
-            {
-                var props = blob.Properties;
-                var baseUri = client.Uri;
-                var builder = new UriBuilder(baseUri);
-                builder.Path += $"/{blob.Name}";
+	}
 
-                var metadata = blob.Metadata;
-                var documentProcessingStatus = GetMetadataEnumOrDefault<DocumentProcessingStatus>(
-                    metadata, nameof(DocumentProcessingStatus), DocumentProcessingStatus.NotProcessed);
-                var embeddingType = GetMetadataEnumOrDefault<EmbeddingType>(
-                    metadata, nameof(EmbeddingType), EmbeddingType.AzureSearch);
+	private static async IAsyncEnumerable<DocumentResponse> OnGetDocumentsAsync(
+		BlobContainerClient client,
+		[EnumeratorCancellation] CancellationToken cancellationToken)
+	{
+		await foreach (var blob in client.GetBlobsAsync(cancellationToken: cancellationToken))
+		{
+			if (blob is not null and { Deleted: false })
+			{
+				var props = blob.Properties;
+				var baseUri = client.Uri;
+				var builder = new UriBuilder(baseUri);
+				builder.Path += $"/{blob.Name}";
 
-                yield return new(
-                    blob.Name,
-                    props.ContentType,
-                    props.ContentLength ?? 0,
-                    props.LastModified,
-                    builder.Uri,
-                    documentProcessingStatus,
-                    embeddingType);
+				var metadata = blob.Metadata;
+				var documentProcessingStatus = GetMetadataEnumOrDefault<DocumentProcessingStatus>(
+					metadata, nameof(DocumentProcessingStatus), DocumentProcessingStatus.NotProcessed);
+				var embeddingType = GetMetadataEnumOrDefault<EmbeddingType>(
+					metadata, nameof(EmbeddingType), EmbeddingType.AzureSearch);
 
-                static TEnum GetMetadataEnumOrDefault<TEnum>(
-                    IDictionary<string, string> metadata,
-                    string key,
-                    TEnum @default) where TEnum : struct => metadata.TryGetValue(key, out var value)
-                        && Enum.TryParse<TEnum>(value, out var status)
-                            ? status
-                            : @default;
-            }
-        }
-    }
+				yield return new(
+					blob.Name,
+					props.ContentType,
+					props.ContentLength ?? 0,
+					props.LastModified,
+					builder.Uri,
+					documentProcessingStatus,
+					embeddingType);
 
-    private static async Task<IResult> OnGetChatSessionsAsync(
+				static TEnum GetMetadataEnumOrDefault<TEnum>(
+					IDictionary<string, string> metadata,
+					string key,
+					TEnum @default) where TEnum : struct => metadata.TryGetValue(key, out var value)
+						&& Enum.TryParse<TEnum>(value, out var status)
+							? status
+							: @default;
+			}
+		}
+	}
+
+	private static async Task<IResult> OnGetChatSessionsAsync(
 		HttpContext context,
 		[FromServices] ILogger<IChatHistoryService> logger,
-        [FromServices] IChatHistoryService chatHistory,
-        CancellationToken cancellationToken)
-    {
-        logger.LogInformation("Get chat history sessions");
+		[FromServices] IChatHistoryService chatHistory,
+		CancellationToken cancellationToken)
+	{
+		logger.LogInformation("Get chat history sessions");
 
 		var username = context.GetUserName();
 
@@ -126,19 +135,19 @@ internal static class WebApplicationExtensions
 			logger.LogError(ex, "Error fetching chat history sessions.");
 			return Results.BadRequest(ex.Message);
 		}
-    }
+	}
 
-    private static async Task<IResult> OnGetChatSessionAsync(
+	private static async Task<IResult> OnGetChatSessionAsync(
 		HttpContext context,
-        [FromRoute] string sessionId,
-        [FromServices] ILogger<IChatHistoryService> logger,
-        [FromServices] IChatHistoryService chatHistory,
-        CancellationToken cancellationToken)
-    {
-        logger.LogInformation($"Get chat history for session with id: {sessionId}");
+		[FromRoute] string sessionId,
+		[FromServices] ILogger<IChatHistoryService> logger,
+		[FromServices] IChatHistoryService chatHistory,
+		CancellationToken cancellationToken)
+	{
+		logger.LogInformation($"Get chat history for session with id: {sessionId}");
 
 		var username = context.GetUserName();
-		
+
 		try
 		{
 			var response = await chatHistory.GetChatHistorySessionAsync(sessionId);
@@ -153,7 +162,7 @@ internal static class WebApplicationExtensions
 			logger.LogError(ex, "Error fetching chat history session.");
 			return Results.BadRequest(ex.Message);
 		}
-    }
+	}
 
 	private static async Task<IResult> OnPostChatSessionAsync(
 		[FromRoute] string sessionId,
@@ -167,7 +176,7 @@ internal static class WebApplicationExtensions
 	{
 		logger.LogInformation($"Add or update chat history with id: {sessionId}");
 
-		var username = context.GetUserName();
+		chatHistorySession.UserId = context.GetUserName();
 
 		// Make sure sessionId from route matches sessionId in the body
 		if (!sessionId.Equals(chatHistorySession.Id, StringComparison.InvariantCultureIgnoreCase))
@@ -176,7 +185,7 @@ internal static class WebApplicationExtensions
 		}
 
 		// make sure the user is authorized to update the chat history
-		if (!chatHistorySession.UserId.Equals(username))
+		if (string.IsNullOrWhiteSpace(chatHistorySession.UserId))
 		{
 			return Results.Unauthorized();
 		}
