@@ -1,7 +1,6 @@
 metadata description = 'Creates a Cosmos DB account with a SQL API database and container.'
 param accountName string = 'cosmosthoth'
 param databaseName string = 'ToDoList'
-param containerName string = 'Items'
 param defaultExperience string = 'Core (SQL)'
 param kind string = 'GlobalDocumentDB'
 param location string = resourceGroup().location
@@ -54,45 +53,4 @@ resource cosmos_database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@202
   }
 }
 
-
-resource cosmos_container 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-02-15-preview' = {
-  parent: cosmos_database
-  name: containerName
-  properties: {
-    resource: {
-      id: containerName
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        automatic: true
-        includedPaths: [
-          {
-            path: '/*'
-          }
-        ]
-        excludedPaths: [
-          {
-            path: '/"_etag"/?'
-          }
-        ]
-      }
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-      uniqueKeyPolicy: {
-        uniqueKeys: []
-      }
-      conflictResolutionPolicy: {
-        mode: 'LastWriterWins'
-        conflictResolutionPath: '/_ts'
-      }
-      computedProperties: []
-    }
-  }
-}
-
-
-
-
+output accountName string = cosmos_account.name
