@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Primitives;
-using MinimalApi.Models;
-
 namespace MinimalApi.Extensions;
 
 internal static class WebApplicationExtensions
@@ -10,9 +7,6 @@ internal static class WebApplicationExtensions
     internal static WebApplication MapApi(this WebApplication app)
     {
         var api = app.MapGroup("api");
-
-        // Blazor 📎 Clippy streaming endpoint
-        api.MapPost("openai/chat", OnPostChatPromptAsync);
 
         // Long-form chat w/ contextual history endpoint
         api.MapPost("chat", OnPostChatAsync);
@@ -40,40 +34,6 @@ internal static class WebApplicationExtensions
         var enableLogout = !string.IsNullOrEmpty(header);
 
         return TypedResults.Ok(enableLogout);
-    }
-
-    private static async IAsyncEnumerable<ChatChunkResponse> OnPostChatPromptAsync(
-        PromptRequest prompt,
-        OpenAIClient client,
-        IConfiguration config,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        var deploymentId = config["AZURE_OPENAI_CHATGPT_DEPLOYMENT"];
-        var response = await client.GetChatCompletionsStreamingAsync(
-            new ChatCompletionsOptions
-            {
-                DeploymentName = deploymentId,
-                Messages =
-                {
-                    new ChatRequestSystemMessage("""
-                        You're an AI assistant for developers, helping them write code more efficiently.
-                        You're name is **Blazor 📎 Clippy** and you're an expert Blazor developer.
-                        You're also an expert in ASP.NET Core, C#, TypeScript, and even JavaScript.
-                        You will always reply with a Markdown formatted response.
-                        """),
-                    new ChatRequestUserMessage("What's your name?"),
-                    new ChatRequestAssistantMessage("Hi, my name is **Blazor 📎 Clippy**! Nice to meet you."),
-                    new ChatRequestUserMessage(prompt.Prompt)
-                }
-            }, cancellationToken);
-
-        await foreach (var choice in response.WithCancellation(cancellationToken))
-        {
-            if (choice.ContentUpdate is { Length: > 0 })
-            {
-                yield return new ChatChunkResponse(choice.ContentUpdate.Length, choice.ContentUpdate);
-            }
-        }
     }
 
     private static async Task<IResult> OnPostChatAsync(
