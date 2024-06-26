@@ -20,6 +20,8 @@ internal static class WebApplicationExtensions
 		// Upsert a chat session
 		api.MapPost("chatsessions/{sessionId}", OnPostChatSessionAsync);
 
+		api.MapDelete("chatsessions/{sessionId}", OnDeleteChatSessionAsync);
+
         // Get all documents
         api.MapGet("documents", OnGetDocumentsAsync);        
 
@@ -187,6 +189,20 @@ internal static class WebApplicationExtensions
 			logger.LogError(ex, "An error occurred while saving chat history");
 			return Results.BadRequest(ex.Message);
 		}
+	}
+	private static async Task<IResult> OnDeleteChatSessionAsync([FromRoute] string sessionId,
+		HttpContext context,
+		[FromServices] ILogger<IChatHistoryService> logger,
+		[FromServices] IChatHistoryService chatHistory,
+		CancellationToken cancellationToken)
+	{
+		// make sure the user is authorized to update the chat history
+		if (string.IsNullOrWhiteSpace(context.GetUserName()))
+			return Results.Unauthorized();
+
+		await chatHistory.DeleteChatHistorySessionAsync(sessionId);
+
+		return Results.NoContent();
 	}
 
 	private static string GetUserName(this HttpContext context)
