@@ -27,6 +27,9 @@ internal static class WebApplicationExtensions
 		// Get pinned queries
 		api.MapGet("pinnedqueries", OnGetPinnedQueriesAsync);
 
+		// Add a pinned query
+		api.MapPost("pinnedqueries", OnPostPinnedQueryAsync);
+
 		// Remove pinned query by id
 		api.MapDelete("pinnedqueries/{id}", OnDeletePinnedQueryAsync);
 
@@ -35,8 +38,8 @@ internal static class WebApplicationExtensions
 
 		api.MapGet("enableLogout", OnGetEnableLogout);
 
-		return app;
-	}
+        return app;
+    }	
 
 	private static IResult OnGetEnableLogout(HttpContext context)
     {
@@ -252,18 +255,20 @@ internal static class WebApplicationExtensions
 	}
 
 	// PINNED QUERIES
-	private static async Task OnGetPinnedQueriesAsync(
+	private static async Task<IResult> OnGetPinnedQueriesAsync(
 		HttpContext context,
 		[FromServices] ILogger<PinnedQueryService> logger,
 		[FromServices] PinnedQueryService service)
 	{
 		var username = context.GetUserName();
 		var results = await service.GetPinnedQueriesAsync(username).ToListAsync();
+
+		return TypedResults.Ok(results);
 	}
 
-	private static async Task OnDeletePinnedQueryAsync(
+	private static async Task<IResult> OnDeletePinnedQueryAsync(
 		HttpContext context,
-		[FromQuery] int id,
+		[FromRoute] string id,
 		[FromServices] ILogger<PinnedQueryService> logger,
 		[FromServices] PinnedQueryService service)
 	{
@@ -272,7 +277,32 @@ internal static class WebApplicationExtensions
 		if (queryToDelete.UserId.Equals(username))
 		{
 			await service.DeletePinnedQueryAsync(id);
+			return Results.NoContent();
 		}
+		else
+		{
+			return Results.NotFound();
+		}
+	}
+
+	private static async Task<IResult> OnPostPinnedQueryAsync(
+		HttpContext context,		
+		PinnedQuery query,
+		[FromServices] ILogger<PinnedQueryService> logger,
+		[FromServices] PinnedQueryService service)
+	{
+		var username = context.GetUserName();
+		if (string.IsNullOrEmpty(query.UserId))
+		{
+			query.UserId = username;
+		}
+		if (!username.Equals(query.UserId))
+		{
+			return Results.Unauthorized();
+		}
+
+		var response = await service.AddPinnedQueryAsync(query);
+		return TypedResults.Created();
 	}
 
 	private static string GetUserName(this HttpContext context)

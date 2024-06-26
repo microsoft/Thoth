@@ -23,7 +23,7 @@ public class PinnedQueryService(Container container)
 		}
 	}
 
-	public async Task<PinnedQuery> GetPinnedQueryAsync(int id) => await _container.ReadItemAsync<PinnedQuery>(id.ToString(), new PartitionKey(id));
+	public async Task<PinnedQuery> GetPinnedQueryAsync(string id) => await _container.ReadItemAsync<PinnedQuery>(id.ToString(), new PartitionKey(id));
 
 	public async Task<PinnedQuery> AddPinnedQueryAsync(PinnedQuery pinnedQuery)
 	{
@@ -31,5 +31,5 @@ public class PinnedQueryService(Container container)
 		return response.Resource;
 	}
 
-	public async Task DeletePinnedQueryAsync(int id) => await _container.DeleteItemAsync<PinnedQuery>(id.ToString(), new PartitionKey(id));
+	public async Task DeletePinnedQueryAsync(string id) => await _container.DeleteItemAsync<PinnedQuery>(id.ToString(), new PartitionKey(id));
 }
