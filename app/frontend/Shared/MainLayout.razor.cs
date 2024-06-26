@@ -4,20 +4,21 @@ namespace ClientApp.Shared;
 
 public sealed partial class MainLayout
 {
-
     [Inject]
     private NavigationManager _navigationManager { get; set; }
     [Inject]
-    private ChatHistoryService _chatHistoryService { get; set; }
+    private ApiClient _apiClient{ get; set; }
     private readonly MudTheme _theme = new();
     private bool _drawerOpen = true;
     private bool _chatHistoryDrawer = false;
     private bool _settingsOpen = false;
     private SettingsPanel? _settingsPanel;
     private MudListItem? _selectedItem = null;
-   
 
-    private bool _isDarkTheme
+	public IEnumerable<ChatHistorySessionUI> ChatHistorySessions { get; set; } = [];
+
+
+	private bool _isDarkTheme
     {
         get => LocalStorage.GetItem<bool>(StorageKeys.PrefersDarkTheme);
         set => LocalStorage.SetItem<bool>(StorageKeys.PrefersDarkTheme, value);
@@ -61,24 +62,19 @@ public sealed partial class MainLayout
         _navigationManager.NavigateTo($"/chat?{nameof(ChatHistorySessionUI.Id)}={chatId}");
     }
 
-    protected void OnDeleteSessionClick(EventArgs e, string chatId)
+    protected async Task OnDeleteSessionClickAsync(EventArgs e, string chatId)
     {
-        _chatHistoryService.DeleteChatHistorySession(chatId);
+        await _apiClient.DeleteChatHistorySessionAsync(chatId);
     }
 
-    protected override void OnInitialized()
-    {
-        _chatHistoryService.OnChange += OnChangeHandlerAsync;
-    }
+	protected override async Task OnInitializedAsync() => _apiClient.OnChange += OnChangeHandlerAsync;
 
-    public void Dispose()
-    {
-        _chatHistoryService.OnChange -= OnChangeHandlerAsync;
-    }
+	public void Dispose() => _apiClient.OnChange -= OnChangeHandlerAsync;
 
-    private async void OnChangeHandlerAsync()
+	private async Task OnChangeHandlerAsync()
     {
         await InvokeAsync(StateHasChanged);
+		ChatHistorySessions = await _apiClient.GetChatHistorySessionsAsync();
     }
 }
 

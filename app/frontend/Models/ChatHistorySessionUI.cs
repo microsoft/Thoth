@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace ClientApp.Models;
-public readonly record struct ChatHistorySessionUI(
+public record struct ChatHistorySessionUI(
 	string Id,
-	string Name,
-	DateTime StartTime,
-	DateTime EndTime,
-	Dictionary<UserQuestion, ChatAppResponseOrError?> QuestionAnswerMap
+	string UserId,
+	string Title,
+	DateTime LastUpdated,
+	int TotalTokens,
+	Dictionary<UserQuestion, ChatAppResponseOrError?> ChatHistory
 	);
 

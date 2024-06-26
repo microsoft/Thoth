@@ -6,7 +6,7 @@
 
 <MudGrid Justify="Justify.Center" Class="overflow-x-visible">
     <MudItem id="answers" xs="12" Class="overflow-x-visible">
-        @if (!_questionAndAnswerMap.Any())
+        @if (!_chatHistorySession.ChatHistory.Any())
         {
             <div class="d-flex align-content-center flex-wrap flex-grow-1 full-height">
                 <Examples Message="Chat with your data" OnExampleClicked="@OnAskQuestionAsync" />
@@ -15,7 +15,7 @@
         else
         {
             <MudStack Reverse="@IsReversed" Spacing="12">
-                @foreach (var ((question, askedOn), answer) in _questionAndAnswerMap)
+                @foreach (var ((question, askedOn), answer) in _chatHistorySession.ChatHistory)
                 {
                     <MudStack Justify="Justify.Center" AlignItems="AlignItems.Start" Spacing="4">
                         <MudBadge Origin="Origin.TopLeft" Overlap="true" Color="Color.Secondary"
@@ -94,7 +94,7 @@
             </MudItem>
             <MudItem xs="0" lg="2" Class="d-flex align-self-center">
                 <MudGrid Justify="Justify.Center">
-                    <MudItem xs="6" Class="pa-2">
+                    <MudItem xs="9" Class="pa-2">
                         <MudFab Color="Color.Secondary" Size="Size.Large"
                                 StartIcon=@Icons.Material.Filled.Send Class="full-width"
                                 Label="Chat" aria-label="Ask question button."
@@ -103,21 +103,11 @@
                     </MudItem>
 
                     <MudItem xs="3" Class="pa-2">
-                        <MudTooltip Arrow="true" Text="Save chat history" Placement="Placement.Top">
-                            <MudFab Color="Color.Primary" Size="Size.Medium"
-                                    StartIcon=@Icons.Material.Filled.Save
-                                    aria-label="Save chat."
-                                    OnClick="@OnSaveChat" Disabled=@(!string.IsNullOrWhiteSpace(ChatSessionId) || _isReceivingResponse || _questionAndAnswerMap is { Count: 0 }) />
-                        </MudTooltip>
-                    </MudItem>
-
-
-                    <MudItem xs="3" Class="pa-2">
                         <MudTooltip Arrow="true" Text="Clear chat history" Placement="Placement.Top">
                             <MudFab Color="Color.Primary" Size="Size.Medium"
                                     StartIcon=@Icons.Material.Filled.DeleteForever
                                     aria-label="Clear chat."
-                                    OnClick="@OnClearChat" Disabled=@(_isReceivingResponse || _questionAndAnswerMap is { Count: 0 }) />
+                                    OnClick="@OnClearChat" Disabled=@(_isReceivingResponse || _chatHistorySession.ChatHistory is { Count: 0 }) />
                         </MudTooltip>
                     </MudItem>
                 </MudGrid>
