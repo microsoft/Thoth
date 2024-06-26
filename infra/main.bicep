@@ -10,9 +10,13 @@ param environmentName string
 param location string
 param tags string = ''
 
-@description('Document Intelligence location is in preview.  Regions are eastus, westus2, or westeurope')
-@allowed([ 'centralus', 'eastus2', 'eastasia', 'westus', 'westeurope', 'westus2', 'australiaeast', 'eastus', 'francecentral', 'japaneast', 'nortcentralus', 'swedencentral', 'switzerlandnorth', 'uksouth' ])
-param docIntLocation string
+@description('''
+Document Intelligence location is in preview.  
+Preview regions are: eastus westus2, or westeurope.  
+Entering other regions while in preview will cause an error in the application.
+''')
+@allowed([ 'eastus', 'westus2', 'westeurope'])
+param docIntPreviewLocation_See_Help string
 
 @description('Location for the OpenAI resource group')
 @allowed([ 'canadaeast', 'westus', 'eastus', 'eastus2', 'francecentral', 'swedencentral', 'switzerlandnorth', 'uksouth', 'japaneast', 'northcentralus', 'australiaeast' ])
@@ -50,11 +54,11 @@ param azureEmbeddingDeploymentName string = 'embedding'
 @description('Capacity of the embedding deployment. Default: 30')
 param embeddingDeploymentCapacity int = 30
 
-@description('Name of the embedding model. Default: text-embedding-ada-002')
+@description('Name of the embedding model. Default: text-embedding-3-small')
 param azureEmbeddingModelName string = 'text-embedding-3-small'
 
 @description('Location of the resource group for the Form Recognizer service')
-param formRecognizerResourceGroupLocation string = docIntLocation
+param formRecognizerResourceGroupLocation string = docIntPreviewLocation_See_Help
 
 @description('Name of the resource group for the Form Recognizer service')
 param formRecognizerResourceGroupName string = ''
@@ -336,7 +340,7 @@ module azureOpenAi 'core/ai/cognitiveservices.bicep' = if (useAOAI) {
         model: {
           format: 'OpenAI'
           name: azureEmbeddingModelName
-          version: '2'
+          version: '1'
         }
         sku: {
           name: 'Standard'
