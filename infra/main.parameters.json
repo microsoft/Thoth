@@ -8,7 +8,7 @@
     "location": {
       "value": "${AZURE_LOCATION}"
     },
-    "docIntLocation": {
+    "docIntPreviewLocation_See_Help": {
       "value": "${AZURE_DOCUMENT_INTELLIGENCE_LOCATION}"
     },
     "tags": {
