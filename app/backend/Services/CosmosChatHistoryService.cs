@@ -2,9 +2,11 @@
 
 using Microsoft.Azure.Cosmos;
 using Container = Microsoft.Azure.Cosmos.Container;
-using Microsoft.SemanticKernel.ChatCompletion;
+using MinimalApi.Models;
 
-public class ChatHistoryService(Container container) : IChatHistoryService
+namespace MinimalApi.Services;
+
+public class CosmosChatHistoryService(Container container) : IChatHistoryService
 {	
 	private readonly Container _container = container;
 
@@ -14,7 +16,7 @@ public class ChatHistoryService(Container container) : IChatHistoryService
 		if (response.StatusCode == System.Net.HttpStatusCode.OK)
 			return response.Resource;
 
-		return new ChatHistorySession(chatHistory.Id, "", "", new ChatHistory("Failed"));
+		throw new CosmosChatHistoryServiceException($"Error upserting history item in CosmosClient. Status Code: {response.StatusCode}");
     }
 
     public async Task DeleteChatHistorySessionAsync(string sessionId)
@@ -31,8 +33,10 @@ public class ChatHistoryService(Container container) : IChatHistoryService
 		}
 		catch (CosmosException cex)
 		{
-			var errorHistory = new ChatHistory(cex.Message);
-			return new ChatHistorySession(sessionId, "", "", errorHistory);
+			if (cex.StatusCode == System.Net.HttpStatusCode.NotFound)
+				return new ChatHistorySession(sessionId, "", "", 0, []);
+
+			throw new CosmosChatHistoryServiceException("Error fetching history item from CosmosClient", cex);
 		}
     }
 
@@ -51,5 +55,12 @@ public class ChatHistoryService(Container container) : IChatHistoryService
 				yield return session;
 			}
 		}
-    }    
+    }
+}
+
+public class CosmosChatHistoryServiceException : Exception
+{
+	public CosmosChatHistoryServiceException() : base() { }
+	public CosmosChatHistoryServiceException(string message) : base(message) { }
+	public CosmosChatHistoryServiceException(string message, Exception innerException) : base(message, innerException) { }
 }

@@ -90,7 +90,7 @@ internal static class ServiceCollectionExtensions
 			options.SerializerOptions.PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase;
 			CosmosClient cosmosClient = new CosmosClient(config["COSMOS_HISTORY_ENDPOINT"], s_azureCredential, options);
 
-            return new ChatHistoryService(cosmosClient.GetDatabase("chatdb").GetContainer("chathistory"));
+            return new CosmosChatHistoryService(cosmosClient.GetDatabase("chatdb").GetContainer("chathistory"));
         });
         services.AddSingleton<ReadRetrieveReadChatService>(sp =>
         {

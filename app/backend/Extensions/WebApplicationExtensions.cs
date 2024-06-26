@@ -133,49 +133,71 @@ internal static class WebApplicationExtensions
 
     private static async Task<IResult> OnGetChatSessionsAsync(
 		HttpContext context,
-		[FromServices] ILogger<ChatHistoryService> logger,
+		[FromServices] ILogger<IChatHistoryService> logger,
         [FromServices] IChatHistoryService chatHistory,
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Get chat history sessions");
 
-		var header = context.Request.Headers["X-MS-CLIENT-PRINCIPAL-ID"];
-		var userName = !string.IsNullOrEmpty(header) ? header.ToString() : "localuser";
+		var username = context.GetUserName();
 
-		var sessions = chatHistory.GetChatHistorySessionsAsync(userName);
-		IEnumerable<ChatSessionListResponse> response = new List<ChatSessionListResponse>();
-		await foreach (var session in sessions)
+		try
 		{
-			response = response.Append(new ChatSessionListResponse { SessionId = session.Id, Title = session.Title });
-		}
+			var sessions = chatHistory.GetChatHistorySessionsAsync(username);
+			List<ChatSessionListResponse> result = [];
+			await foreach (var item in sessions)
+			{
+				var lastUpdated = item.ChatHistory.OrderByDescending(h => h.Question.AskedOn).FirstOrDefault()?.Question.AskedOn;
+				var chatSession = new ChatSessionListResponse(
+					item.Id,
+					item.UserId,
+					item.Title,
+					lastUpdated ?? DateTime.Now
+				);
+				result.Add(chatSession);
+			}
 
-        return TypedResults.Ok(response);
+			return TypedResults.Ok(result);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Error fetching chat history sessions.");
+			return Results.BadRequest(ex.Message);
+		}
     }
 
     private static async Task<IResult> OnGetChatSessionAsync(
 		HttpContext context,
         [FromRoute] string sessionId,
-        [FromServices] ILogger<ChatHistoryService> logger,
+        [FromServices] ILogger<IChatHistoryService> logger,
         [FromServices] IChatHistoryService chatHistory,
         CancellationToken cancellationToken)
     {
         logger.LogInformation($"Get chat history for session with id: {sessionId}");
 
 		var username = context.GetUserName();
-		// put try/catch here
-        var response = await chatHistory.GetChatHistorySessionAsync(sessionId);
+		
+		try
+		{
+			var response = await chatHistory.GetChatHistorySessionAsync(sessionId);
+			// if user id does not match fetched history, return 404
+			if (!response.UserId.Equals(username))
+				return Results.NotFound();
 
-		if (!response.UserId.Equals(username))
-			return Results.NotFound();
-
-        return TypedResults.Ok(response);
+			return TypedResults.Ok(response);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Error fetching chat history session.");
+			return Results.BadRequest(ex.Message);
+		}
     }
 
 	private static async Task<IResult> OnPostChatSessionAsync(
 		[FromRoute] string sessionId,
 		HttpContext context,
 		ChatHistorySession chatHistorySession,
-		[FromServices] ILogger<ChatHistoryService> logger,
+		[FromServices] ILogger<IChatHistoryService> logger,
 		[FromServices] IChatHistoryService chatHistory,
 		CancellationToken cancellationToken)
 	{
@@ -183,19 +205,28 @@ internal static class WebApplicationExtensions
 
 		var username = context.GetUserName();
 
+		// Make sure sessionId from route matches sessionId in the body
 		if (!sessionId.Equals(chatHistorySession.Id, StringComparison.InvariantCultureIgnoreCase))
 		{
 			return Results.BadRequest();
 		}
 
+		// make sure the user is authorized to update the chat history
 		if (!chatHistorySession.UserId.Equals(username))
 		{
 			return Results.Unauthorized();
 		}
-		// put try/catch around this instead of internal to service
-		var response = await chatHistory.UpsertChatHistorySessionAsync(chatHistorySession);
 
-		return TypedResults.Ok(response);
+		try
+		{
+			var response = await chatHistory.UpsertChatHistorySessionAsync(chatHistorySession);
+			return TypedResults.Ok(response);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "An error occurred while saving chat history");
+			return Results.BadRequest(ex.Message);
+		}
 	}
 
 	private static string GetUserName(this HttpContext context)

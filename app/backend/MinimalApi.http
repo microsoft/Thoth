@@ -5,9 +5,59 @@ content-type: application/json
 
 {
   "id": "test1",
-  "userId": "philbert",
-  "title": "test session1",
-  "chatHistory": []
+  "userId": "localuser",
+  "title": "Sample Session",
+  "totalTokens": 0,
+  "chatHistory": [
+    {
+      "question": {
+        "question": "Sample question",
+        "askedOn": "2024-06-26T15:13:26.435Z"
+      },
+      "response": {
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "string",
+              "content": "string",
+              "totalTokens": 0
+            },
+            "context": {
+              "dataPointsContent": [
+                {
+                  "title": "string",
+                  "content": "string"
+                }
+              ],
+              "followup_questions": [
+                "string"
+              ],
+              "thoughts": [
+                {
+                  "title": "string",
+                  "description": "string",
+                  "props": [
+                    {}
+                  ]
+                }
+              ],
+              "data_points": {
+                "text": [
+                  "string"
+                ]
+              }
+            },
+            "citationBaseUrl": "string",
+            "content_filter_results": {
+              "severity": {}
+            }
+          }
+        ],
+        "error": "string"
+      }
+    }
+  ]
 }
 ###
 
