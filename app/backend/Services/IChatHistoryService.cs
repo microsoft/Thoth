@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using MinimalApi.Models;
+
 public interface IChatHistoryService
 {
 	Task<ChatHistorySession> UpsertChatHistorySessionAsync(ChatHistorySession chatHistory);
