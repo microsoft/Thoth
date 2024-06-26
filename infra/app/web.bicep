@@ -41,6 +41,10 @@ param openAiApiKey string
 @description('Whether to use Azure OpenAI')
 param useAOAI bool = true
 
+@description('The Cosmos DB endpoint')
+param cosmosEndpoint string
+
+
 resource webIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: identityName
   location: location
@@ -77,6 +81,7 @@ var appSettings = {
     AZURE_OPENAI_ENDPOINT: openAiEndpoint
     AZURE_OPENAI_CHATGPT_DEPLOYMENT: openAiChatGptDeployment
     AZURE_OPENAI_EMBEDDING_DEPLOYMENT: openAiEmbeddingDeployment
+    COSMOS_HISTORY_ENDPOINT: cosmosEndpoint
     OPENAI_API_KEY: openAiApiKey
     USE_AOAI: useAOAI ? 'true' : 'false'
 }

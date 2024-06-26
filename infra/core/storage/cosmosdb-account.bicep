@@ -54,3 +54,4 @@ resource cosmos_database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@202
 }
 
 output accountName string = cosmos_account.name
+output endpoint string = cosmos_account.properties.documentEndpoint
