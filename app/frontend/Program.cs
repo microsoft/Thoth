@@ -16,7 +16,7 @@ builder.Services.AddHttpClient<ApiClient>(client =>
 	if (!builder.HostEnvironment.BaseAddress.Contains("localhost"))
 		return;
 
-	var username = builder.Configuration["username"];
+	var username = builder.Configuration.GetValue<string>("username");
 	username = string.IsNullOrWhiteSpace(username) ? "local-developer" : username;
 	client.DefaultRequestHeaders.Add("X-MS-CLIENT-PRINCIPAL-ID", username);
 });
