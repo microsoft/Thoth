@@ -22,8 +22,6 @@ internal static class WebApplicationExtensions
 
 		api.MapDelete("chatsessions/{sessionId}", OnDeleteChatSessionAsync);
 
-		// Get all documents
-		api.MapGet("documents", OnGetDocumentsAsync);
 		// Get pinned queries
 		api.MapGet("pinnedqueries", OnGetPinnedQueriesAsync);
 
