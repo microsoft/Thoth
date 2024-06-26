@@ -32,8 +32,4 @@
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\Client\" />
-  </ItemGroup>
-
 </Project>

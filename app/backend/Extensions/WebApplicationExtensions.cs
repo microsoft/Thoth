@@ -24,6 +24,14 @@ internal static class WebApplicationExtensions
 
 		// Get all documents
 		api.MapGet("documents", OnGetDocumentsAsync);
+		// Get pinned queries
+		api.MapGet("pinnedqueries", OnGetPinnedQueriesAsync);
+
+		// Remove pinned query by id
+		api.MapDelete("pinnedqueries/{id}", OnDeletePinnedQueryAsync);
+
+        // Get all documents
+        api.MapGet("documents", OnGetDocumentsAsync);        
 
 		api.MapGet("enableLogout", OnGetEnableLogout);
 
@@ -31,9 +39,9 @@ internal static class WebApplicationExtensions
 	}
 
 	private static IResult OnGetEnableLogout(HttpContext context)
-	{
-		var header = context.Request.Headers["X-MS-CLIENT-PRINCIPAL-ID"];
-		var enableLogout = !string.IsNullOrEmpty(header);
+    {
+        var header = context.Request.Headers["X-MS-CLIENT-PRINCIPAL-ID"];
+        var enableLogout = !string.IsNullOrEmpty(header);
 
 		return TypedResults.Ok(enableLogout);
 	}
@@ -102,7 +110,9 @@ internal static class WebApplicationExtensions
 		}
 	}
 
-	private static async Task<IResult> OnGetChatSessionsAsync(
+	// CHAT HISTORY
+
+    private static async Task<IResult> OnGetChatSessionsAsync(
 		HttpContext context,
 		[FromServices] ILogger<IChatHistoryService> logger,
 		[FromServices] IChatHistoryService chatHistory,
@@ -239,6 +249,30 @@ internal static class WebApplicationExtensions
 		await chatHistory.DeleteChatHistorySessionAsync(sessionId);
 
 		return Results.NoContent();
+	}
+
+	// PINNED QUERIES
+	private static async Task OnGetPinnedQueriesAsync(
+		HttpContext context,
+		[FromServices] ILogger<PinnedQueryService> logger,
+		[FromServices] PinnedQueryService service)
+	{
+		var username = context.GetUserName();
+		var results = await service.GetPinnedQueriesAsync(username).ToListAsync();
+	}
+
+	private static async Task OnDeletePinnedQueryAsync(
+		HttpContext context,
+		[FromQuery] int id,
+		[FromServices] ILogger<PinnedQueryService> logger,
+		[FromServices] PinnedQueryService service)
+	{
+		var username = context.GetUserName();
+		var queryToDelete = await service.GetPinnedQueryAsync(id);
+		if (queryToDelete.UserId.Equals(username))
+		{
+			await service.DeletePinnedQueryAsync(id);
+		}
 	}
 
 	private static string GetUserName(this HttpContext context)

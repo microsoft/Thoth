@@ -1,16 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-#pragma warning disable SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using Azure.Core;
 using Microsoft.Azure.Cosmos;
 
 namespace MinimalApi.Extensions;
 
 internal static class ServiceCollectionExtensions
 {
-    private static readonly DefaultAzureCredential s_azureCredential = new();
+    private static readonly DefaultAzureCredential s_azureCredential = new();	
 
     internal static IServiceCollection AddAzureServices(this IServiceCollection services)
     {
@@ -80,18 +76,29 @@ internal static class ServiceCollectionExtensions
                 return openAIClient;
             }
         });
-
+		services.AddSingleton<CosmosClient>(sp =>
+		{
+			var config = sp.GetRequiredService<IConfiguration>();
+			CosmosClientOptions options = new CosmosClientOptions
+			{
+				SerializerOptions = new CosmosSerializationOptions()
+				{
+					PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
+				}
+			};
+			return new CosmosClient(config["COSMOS_HISTORY_ENDPOINT"], s_azureCredential, options);
+		});
         services.AddSingleton<AzureBlobStorageService>();
         services.AddSingleton<IChatHistoryService>(sp =>
         {
-            var config = sp.GetRequiredService<IConfiguration>();
-			CosmosClientOptions options = new CosmosClientOptions();
-			options.SerializerOptions = new CosmosSerializationOptions();
-			options.SerializerOptions.PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase;
-			CosmosClient cosmosClient = new CosmosClient(config["COSMOS_HISTORY_ENDPOINT"], s_azureCredential, options);
-
-            return new CosmosChatHistoryService(cosmosClient.GetDatabase("chatdb").GetContainer("chathistory"));
+			CosmosClient cosmosClient = sp.GetRequiredService<CosmosClient>();
+			return new CosmosChatHistoryService(cosmosClient.GetDatabase("chatdb").GetContainer("chathistory"));
         });
+		services.AddSingleton<PinnedQueryService>(sp =>
+		{
+			CosmosClient cosmosClient = sp.GetRequiredService<CosmosClient>();
+			return new PinnedQueryService(cosmosClient.GetDatabase("chatdb").GetContainer("pinnedqueries"));
+		});
         services.AddSingleton<ReadRetrieveReadChatService>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
@@ -116,6 +123,3 @@ internal static class ServiceCollectionExtensions
         return services;
     }
 }
-
-#pragma warning restore SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
