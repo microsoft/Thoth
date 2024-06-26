@@ -141,9 +141,6 @@ param useAOAI bool
 @description('OpenAI API Key')
 param openAIApiKey string
 
-@description('OpenAI Model')
-param openAiChatGptDeployment string
-
 @description('OpenAI Embedding Model')
 param openAiEmbeddingDeployment string
 
@@ -264,6 +261,7 @@ module web './app/web.bicep' = {
     openAiChatGptDeployment: useAOAI ? azureChatGptDeploymentName : ''
     openAiEmbeddingDeployment: useAOAI ? azureEmbeddingDeploymentName : ''
     useAOAI: useAOAI
+    cosmosEndpoint: database.outputs.endpoint
   }
 }
 
@@ -647,3 +645,4 @@ output USE_AOAI bool = useAOAI
 output OPENAI_EMBEDDING_DEPLOYMENT string = openAiEmbeddingDeployment
 output AZURE_OPENAI_CHATGPT_MODEL_VERSION string = azureOpenAIChatGptModelVersion
 output AZURE_OPENAI_CHATGPT_MODEL_NAME string = azureOpenAIChatGptModelName
+output COSMOS_HISTORY_ENDPOINT string = database.outputs.endpoint

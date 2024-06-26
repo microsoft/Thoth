@@ -93,6 +93,6 @@ resource cosmos_container 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
   }
 }
 
-
+output endpoint string = cosmos_account.properties.documentEndpoint
 
 
