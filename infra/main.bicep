@@ -10,8 +10,8 @@ param environmentName string
 param location string
 param tags string = ''
 
-@description('Document Intelligence location is in preview.  Regions are East US, West Us2, or West Europe')
-@allowed([ 'eastus', 'westus2'])
+@description('Document Intelligence location is in preview.  Regions are eastus, westus2, or westeurope')
+@allowed([ 'centralus', 'eastus2', 'eastasia', 'westus', 'westeurope', 'westus2', 'australiaeast', 'eastus', 'francecentral', 'japaneast', 'nortcentralus', 'swedencentral', 'switzerlandnorth', 'uksouth' ])
 param docIntLocation string
 
 @description('Location for the OpenAI resource group')
