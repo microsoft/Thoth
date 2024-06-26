@@ -1,11 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.ChatCompletion;
+namespace Shared.Models;
 
 public record ChatHistorySession(
 	string Id,
 	string UserId,
 	string Title,
-	ChatHistory ChatHistory
+	int TotalTokens,
+	List<ChatHistoryQA> ChatHistory
 );
 
+public record ChatHistoryQA(
+	UserQuestion Question,
+	ChatAppResponseOrError Response
+);
