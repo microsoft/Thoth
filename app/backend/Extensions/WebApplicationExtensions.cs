@@ -161,6 +161,8 @@ internal static class WebApplicationExtensions
 		ChatHistorySession chatHistorySession,
 		[FromServices] ILogger<IChatHistoryService> logger,
 		[FromServices] IChatHistoryService chatHistory,
+		[FromServices] OpenAIClient openAIClient,
+		[FromServices] IConfiguration config,
 		CancellationToken cancellationToken)
 	{
 		logger.LogInformation($"Add or update chat history with id: {sessionId}");
@@ -177,6 +179,31 @@ internal static class WebApplicationExtensions
 		if (!chatHistorySession.UserId.Equals(username))
 		{
 			return Results.Unauthorized();
+		}
+
+		// generate a 3 word summary to be the title
+		if (string.IsNullOrWhiteSpace(chatHistorySession.Title))
+		{
+			var deploymentId = config["AZURE_OPENAI_CHATGPT_DEPLOYMENT"];
+
+			var chatOptions = new ChatCompletionsOptions
+			{
+				DeploymentName = deploymentId,
+				Messages =
+					{
+					new ChatRequestSystemMessage("""
+                        Given the following chat session, generate a 3 word summary
+                        """)
+				}
+			};
+
+			var firstQuestionAsked = chatHistorySession.ChatHistory.FirstOrDefault(m => string.IsNullOrWhiteSpace(m.Response.Error))?.Question.Question;
+
+			chatOptions.Messages.Add(new ChatRequestUserMessage(firstQuestionAsked));
+
+			var response = await openAIClient.GetChatCompletionsAsync(chatOptions, cancellationToken);
+
+			chatHistorySession.Title = response.Value.Choices[0].Message.Content;
 		}
 
 		try
