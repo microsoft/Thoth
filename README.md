@@ -19,6 +19,16 @@ Retrieval Augmented Generation, or RAG pattern applications opinionated AI appli
 
 ![RAG Architecture](docs/appcomponents.png)
 
+## Features
+
+* Natural language chat UI and AI generative answers
+* RAG pattern via vector search on vector embedded documents (pdf, word, excel, images, ppt, html, tiff)
+* Token usage tracking and limit handling within a conversation, with transparency in UI for user
+* Save and delete persisted chat sessions by user
+* Pin favorite queries by user, displayed as suggested questions on chat page
+* blob triggered function to process, vector embed and index documents
+* dev utility console app for bulk process, vector embed and index a container of documents
+
 ## Application architecture
 
 ![Application Flow](docs/AppFlowDiagram.png)
@@ -32,15 +42,6 @@ Retrieval Augmented Generation, or RAG pattern applications opinionated AI appli
    - [**Document Intelligence**](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-4.0.0) – used for chunking the documents via the [pre-built layout model](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/concept-layout?view=doc-intel-4.0.0&tabs=sample-code) for advanced handling of different document types with tables and other structures.
    - [**Azure OpenAI Service**](https://learn.microsoft.com/azure/ai-services/openai/overview) – provides the Large Language Models to generate vectoring embeddings for the indexed document chunks.
    - [**Azure AI Search**](https://learn.microsoft.com/azure/search/search-what-is-azure-search) – indexes embedded document chunks from the data stored in an Azure Storage Account. This makes the documents searchable using [vector search](https://learn.microsoft.com/azure/search/search-get-started-vector) capabilities.    
-
-## Features
-
-* Natural language chat UI
-* Save and delete persisted chat sessions by user
-* Pin favorite queries by user, displayed as suggested questions on chat page
-* RAG pattern via vector search on vector embedded documents (pdf, word, excel, images, ppt, html, tiff)
-* blob triggered function to process, vector embed and index documents
-* dev utility console app for bulk process, vector embed and index a container of documents
 
 ## Getting Started
 This sample application, as deployed, includes the following Azure components.
@@ -210,6 +211,7 @@ This project started with the sample application below:
 * Deploys to App Service instead of Container App
 * Updated Azure OpenAI deployments (GPT-4o, text-embedding-3-small)
 * Upgraded to Doc Intelligence v4.0 preview SDK for Word document support
+* Added Token usage tracking and limit handling with conversation history, and transparency in UI
 * Added Cosmos DB for new feature support:
    * Chat Session history by user
    * Pinned queries by user
