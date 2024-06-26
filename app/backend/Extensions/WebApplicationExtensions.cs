@@ -22,18 +22,27 @@ internal static class WebApplicationExtensions
 
 		api.MapDelete("chatsessions/{sessionId}", OnDeleteChatSessionAsync);
 
-		// Get all documents
-		api.MapGet("documents", OnGetDocumentsAsync);
+		// Get pinned queries
+		api.MapGet("pinnedqueries", OnGetPinnedQueriesAsync);
+
+		// Add a pinned query
+		api.MapPost("pinnedqueries", OnPostPinnedQueryAsync);
+
+		// Remove pinned query by id
+		api.MapDelete("pinnedqueries/{id}", OnDeletePinnedQueryAsync);
+
+        // Get all documents
+        api.MapGet("documents", OnGetDocumentsAsync);        
 
 		api.MapGet("enableLogout", OnGetEnableLogout);
 
-		return app;
-	}
+        return app;
+    }	
 
 	private static IResult OnGetEnableLogout(HttpContext context)
-	{
-		var header = context.Request.Headers["X-MS-CLIENT-PRINCIPAL-ID"];
-		var enableLogout = !string.IsNullOrEmpty(header);
+    {
+        var header = context.Request.Headers["X-MS-CLIENT-PRINCIPAL-ID"];
+        var enableLogout = !string.IsNullOrEmpty(header);
 
 		return TypedResults.Ok(enableLogout);
 	}
@@ -102,7 +111,9 @@ internal static class WebApplicationExtensions
 		}
 	}
 
-	private static async Task<IResult> OnGetChatSessionsAsync(
+	// CHAT HISTORY
+
+    private static async Task<IResult> OnGetChatSessionsAsync(
 		HttpContext context,
 		[FromServices] ILogger<IChatHistoryService> logger,
 		[FromServices] IChatHistoryService chatHistory,
@@ -239,6 +250,57 @@ internal static class WebApplicationExtensions
 		await chatHistory.DeleteChatHistorySessionAsync(sessionId);
 
 		return Results.NoContent();
+	}
+
+	// PINNED QUERIES
+	private static async Task<IResult> OnGetPinnedQueriesAsync(
+		HttpContext context,
+		[FromServices] ILogger<PinnedQueryService> logger,
+		[FromServices] PinnedQueryService service)
+	{
+		var username = context.GetUserName();
+		var results = await service.GetPinnedQueriesAsync(username).ToListAsync();
+
+		return TypedResults.Ok(results);
+	}
+
+	private static async Task<IResult> OnDeletePinnedQueryAsync(
+		HttpContext context,
+		[FromRoute] string id,
+		[FromServices] ILogger<PinnedQueryService> logger,
+		[FromServices] PinnedQueryService service)
+	{
+		var username = context.GetUserName();
+		var queryToDelete = await service.GetPinnedQueryAsync(id);
+		if (queryToDelete.UserId.Equals(username))
+		{
+			await service.DeletePinnedQueryAsync(id);
+			return Results.NoContent();
+		}
+		else
+		{
+			return Results.NotFound();
+		}
+	}
+
+	private static async Task<IResult> OnPostPinnedQueryAsync(
+		HttpContext context,		
+		PinnedQuery query,
+		[FromServices] ILogger<PinnedQueryService> logger,
+		[FromServices] PinnedQueryService service)
+	{
+		var username = context.GetUserName();
+		if (string.IsNullOrEmpty(query.UserId))
+		{
+			query.UserId = username;
+		}
+		if (!username.Equals(query.UserId))
+		{
+			return Results.Unauthorized();
+		}
+
+		var response = await service.AddPinnedQueryAsync(query);
+		return TypedResults.Created($"/api/pinnedqueries/{query.Id}", response);
 	}
 
 	private static string GetUserName(this HttpContext context)

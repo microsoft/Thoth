@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.AspNetCore.WebUtilities;
+using System.Linq;
 
 namespace ClientApp.Pages;
 
@@ -11,11 +12,11 @@ public sealed partial class Chat
 	private string _lastReferenceQuestion = "";
 	private bool _isReceivingResponse = false;
 
+	private PinnedQuery[] _pinnedQueries = [];
 	private ChatHistorySession _chatHistorySession = new();
 
 	[Inject] public required ISessionStorageService SessionStorage { get; set; }
 	[Inject] public required NavigationManager NavigationManager { get; set; }
-	[Inject] public required PinnedQueriesService PinnedQueriesService { get; set; }
 
 	[Inject] public required ApiClient ApiClient { get; set; }
 
@@ -44,6 +45,19 @@ public sealed partial class Chat
 			await LoadChatHistoryFromQueryParamAsync();
 			StateHasChanged();
 		}
+	}
+
+	protected async override Task OnInitializedAsync()
+	{
+		await LoadPinnedQueriesAsync();
+
+		await base.OnInitializedAsync();
+	}
+
+	private async Task LoadPinnedQueriesAsync()
+	{
+		var items = await ApiClient.GetPinnedQueriesAsync();
+		_pinnedQueries = items.ToArray();
 	}
 
 	private async Task LoadChatHistoryFromQueryParamAsync()
@@ -111,8 +125,8 @@ public sealed partial class Chat
 
 
 	public string PinIcon(string question)
-	{
-		return PinnedQueriesService.GetPinnedQueries().Any(q => string.Equals(q.Question, question, StringComparison.InvariantCultureIgnoreCase))
+	{		
+		return _pinnedQueries.Any(q => string.Equals(q.Query.Question, question, StringComparison.InvariantCultureIgnoreCase))
 			? Icons.Material.Filled.PushPin
 			: Icons.Material.Outlined.PushPin;
 	}
@@ -122,27 +136,25 @@ public sealed partial class Chat
 
 	}
 
-	private void OnPinQuestion(string question, DateTime askedOn)
+	private async Task OnPinQuestionAsync(string question, DateTime askedOn)
 	{
 
-		var pinnedq = PinnedQueriesService
-			.GetPinnedQueries()
-			.FirstOrDefault(q => string.Equals(q.Question, question, StringComparison.InvariantCultureIgnoreCase));
+		var pinnedq = _pinnedQueries.FirstOrDefault(q => string.Equals(q.Query.Question, question, StringComparison.InvariantCultureIgnoreCase));
 
-		Console.WriteLine(pinnedq.Question ?? "No questions here :D");
+		Console.WriteLine(pinnedq?.Query.Question ?? "No questions here :D");
 
-		if (PinnedQueriesService
-			.GetPinnedQueries()
-			.Any(q => string.Equals(q.Question, question, StringComparison.InvariantCultureIgnoreCase)))
+		if (_pinnedQueries
+			.Any(q => string.Equals(q.Query.Question, question, StringComparison.InvariantCultureIgnoreCase)))
 		{
-			PinnedQueriesService.DeletePinnedQuery(question);
+			await ApiClient.DeletePinnedQueryAsync(pinnedq?.Id!);
 		}
 		else
 		{
-			var userQuestion = new UserQuestion(question, DateTime.Now);
-			PinnedQueriesService.AddPinnedQuery(userQuestion);
+			var pinq = new PinnedQuery(Guid.NewGuid().ToString(), "", new UserQuestion(question, DateTime.Now));
+			await ApiClient.AddPinnedQueryAsync(pinq);
 		}
 
+		await LoadPinnedQueriesAsync();
 		StateHasChanged();
 	}
 

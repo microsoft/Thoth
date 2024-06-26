@@ -106,15 +106,20 @@ public sealed class ApiClient(HttpClient httpClient)
 		}
 	}
 
-	public async Task<IEnumerable<ChatSessionListResponse>> GetChatHistorySessionsAsync()
-	{
-		var response = await httpClient.GetAsync("api/chatsessions");
+	public async Task<IEnumerable<ChatSessionListResponse>> GetChatHistorySessionsAsync() => await httpClient.GetFromJsonAsync<IEnumerable<ChatSessionListResponse>>("api/chatsessions");
 
-		return await response.Content.ReadFromJsonAsync<IEnumerable<ChatSessionListResponse>>();
+
+	public async Task DeleteChatHistorySessionAsync(string sessionId) => await httpClient.DeleteAsync($"api/chatsessions/{sessionId}");
+
+	public async Task<IEnumerable<PinnedQuery>> GetPinnedQueriesAsync() => await httpClient.GetFromJsonAsync<IEnumerable<PinnedQuery>>("api/pinnedqueries");
+
+	public async Task<PinnedQuery> AddPinnedQueryAsync(PinnedQuery query)
+	{
+		var response = await httpClient.PostAsJsonAsync("api/pinnedqueries", query);
+		response.EnsureSuccessStatusCode();
+		return await response.Content.ReadFromJsonAsync<PinnedQuery>();
 	}
 
-	public async Task DeleteChatHistorySessionAsync(string sessionId)
-	{
-		await httpClient.DeleteAsync($"api/chatsessions/{sessionId}");
-	}
+	public async Task DeletePinnedQueryAsync(string id) => await httpClient.DeleteAsync($"api/pinnedqueries/{id}");
+
 }
