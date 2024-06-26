@@ -72,7 +72,7 @@ Pricing varies per region and usage, so it isn't possible to predict exact costs
 
 ### Project Setup
 
-You have a few options for setting up this project. The easiest way to get started is GitHub Codespaces, since it will setup all the tools for you, but you can also set it up [locally](#local-environment) if desired.
+You have a few options for setting up this project. The easiest way to get started is GitHub Codespaces, since it will setup all the tools for you, but you can also set it up [locally](#running-locally-for-dev-and-debug) if desired. However, as many cloud resources are required to run the client app and minimal API even locally, deployment to Azure first will provision all the necessary services. 
 
 #### GitHub Codespaces
 
@@ -124,11 +124,13 @@ If you have existing resources in Azure that you wish to use, you can configure 
 > [!NOTE]<br> 
 > You can also use existing Search and Storage Accounts. See `./infra/main.parameters.json` for list of environment variables to pass to `azd env set` to configure those existing resources.
 
-### Configure Authentication
-UNDER DEVELOPMENT
+### Configure UI Authentication
+To enable persistence of chat session history and pinning of preferred queries per user, authentication needs to be enabled on the deployed App Service that hosts the minimal API and web client. 
 
-TODO:
-- Enable easy auth on app service
+1. In the Azure portal, find and open the deployed App Service
+1. Browse into the `Settings/Authentication` blade and click `Add identity provider`
+1. To use Azure Entra for user sign-in, select Microsoft as the identity provider, leave all default settings, and click `Add`. 
+1. Return to the Overview blade of the App Service, and restart.
 
 ### Run the deployed app
 
