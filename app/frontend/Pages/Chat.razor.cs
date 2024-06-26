@@ -11,7 +11,7 @@ public sealed partial class Chat
 	private string _lastReferenceQuestion = "";
 	private bool _isReceivingResponse = false;
 
-	private ChatHistorySessionUI _chatHistorySession = new();
+	private ChatHistorySession _chatHistorySession = new();
 
 	[Inject] public required ISessionStorageService SessionStorage { get; set; }
 	[Inject] public required NavigationManager NavigationManager { get; set; }
@@ -32,13 +32,8 @@ public sealed partial class Chat
 	}
 
 	[Parameter]
-	[SupplyParameterFromQuery(Name = nameof(ChatHistorySessionUI.Id))]
+	[SupplyParameterFromQuery(Name = nameof(ChatHistorySession.Id))]
 	public string? ChatSessionId { get; set; }
-
-	protected override void OnInitialized()
-	{
-		//LoadChatHistoryFromQueryParam();
-	}
 
 	protected override async Task OnParametersSetAsync()
 	{
@@ -56,7 +51,7 @@ public sealed partial class Chat
 		Console.WriteLine("Loading chat history from query param");
 		var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
 
-		if (!QueryHelpers.ParseQuery(uri.Query).TryGetValue(nameof(ChatHistorySessionUI.Id), out var ChatSessionId))
+		if (!QueryHelpers.ParseQuery(uri.Query).TryGetValue(nameof(ChatHistorySession.Id), out var ChatSessionId))
 		{
 			return;
 		}
@@ -79,15 +74,16 @@ public sealed partial class Chat
 		_isReceivingResponse = true;
 		_lastReferenceQuestion = _userQuestion;
 		_currentQuestion = new(_userQuestion, DateTime.Now);
-		_chatHistorySession.ChatHistory[_currentQuestion] = null;
+		var currentInteraction = new ChatHistoryQA(_currentQuestion, null);
+		_chatHistorySession.ChatHistory.Add(currentInteraction);
 
 		try
 		{
 			var history = _chatHistorySession.ChatHistory
-				.Where(x => x.Value?.Choices is { Length: > 0 })
+				.Where(x => x.Response?.Choices is { Length: > 0 })
 				.SelectMany(x => new ChatMessage[] {
-					new ChatMessage("user", x.Key.Question, 0),
-					new ChatMessage("assistant", x.Value!.Choices[0].Message.Content, x.Value!.Choices[0].Message.TotalTokens) })
+					new ChatMessage("user", x.Question.Question, 0),
+					new ChatMessage("assistant", x.Response!.Choices[0].Message.Content, x.Response!.Choices[0].Message.TotalTokens) })
 				.ToList();
 
 			history.Add(new ChatMessage("user", _userQuestion, 0));
@@ -95,19 +91,17 @@ public sealed partial class Chat
 			var request = new ChatRequest([.. history], Settings.Overrides);
 			var result = await ApiClient.ChatConversationAsync(request);
 
-			_chatHistorySession.ChatHistory[_currentQuestion] = result.Response;
+			currentInteraction.Response = result.Response;
 			if (result.IsSuccessful)
 			{
 				_userQuestion = "";
 				_currentQuestion = default;
 			}
 
-
-			// upsert logic...
 			_chatHistorySession = await ApiClient.UpsertChatHistorySessionAsync(_chatHistorySession);
 
 			ChatSessionId = _chatHistorySession.Id;
-			NavigationManager.NavigateTo($"/chat?{nameof(ChatHistorySessionUI.Id)}={ChatSessionId}");
+			NavigationManager.NavigateTo($"/chat?{nameof(ChatHistorySession.Id)}={ChatSessionId}");
 		}
 		finally
 		{

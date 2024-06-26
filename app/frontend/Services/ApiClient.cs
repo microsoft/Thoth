@@ -4,10 +4,6 @@ namespace ClientApp.Services;
 
 public sealed class ApiClient(HttpClient httpClient)
 {
-	public Func<Task> OnChange;
-	public List<EventCallback> listeners { get; private set; } = new List<EventCallback>();
-	private void NotifyStateChanged() => OnChange?.Invoke();
-
 	public async Task<bool> ShowLogoutButtonAsync()
 	{
 		var response = await httpClient.GetAsync("api/enableLogout");
@@ -84,7 +80,7 @@ public sealed class ApiClient(HttpClient httpClient)
 		}
 	}
 
-	public async Task<ChatHistorySessionUI> UpsertChatHistorySessionAsync(ChatHistorySessionUI chatHistorySession)
+	public async Task<ChatHistorySession> UpsertChatHistorySessionAsync(ChatHistorySession chatHistorySession)
 	{
 		chatHistorySession.Id = string.IsNullOrWhiteSpace(chatHistorySession.Id) ? Guid.NewGuid().ToString() : chatHistorySession.Id;
 
@@ -92,18 +88,16 @@ public sealed class ApiClient(HttpClient httpClient)
 
 		response.EnsureSuccessStatusCode();
 
-		var newChatHistorySession = await response.Content.ReadFromJsonAsync<ChatHistorySessionUI>();
-		NotifyStateChanged();
-		return newChatHistorySession;
+		return await response.Content.ReadFromJsonAsync<ChatHistorySession>();
 	}
 
-	public async Task<ChatHistorySessionUI?> GetChatHistorySessionAsync(string sessionId)
+	public async Task<ChatHistorySession?> GetChatHistorySessionAsync(string sessionId)
 	{
 		var response = await httpClient.GetAsync($"api/chatsessions/{sessionId}");
 
 		try
 		{
-			return await response.Content.ReadFromJsonAsync<ChatHistorySessionUI>();
+			return await response.Content.ReadFromJsonAsync<ChatHistorySession>();
 		}
 		catch (Exception ex)
 		{
@@ -112,16 +106,15 @@ public sealed class ApiClient(HttpClient httpClient)
 		}
 	}
 
-	public async Task<IEnumerable<ChatHistorySessionUI>> GetChatHistorySessionsAsync()
+	public async Task<IEnumerable<ChatSessionListResponse>> GetChatHistorySessionsAsync()
 	{
 		var response = await httpClient.GetAsync("api/chatsessions");
 
-		return await response.Content.ReadFromJsonAsync<IEnumerable<ChatHistorySessionUI>>();
+		return await response.Content.ReadFromJsonAsync<IEnumerable<ChatSessionListResponse>>();
 	}
 
 	public async Task DeleteChatHistorySessionAsync(string sessionId)
 	{
 		await httpClient.DeleteAsync($"api/chatsessions/{sessionId}");
-		NotifyStateChanged();
 	}
 }

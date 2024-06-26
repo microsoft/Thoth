@@ -15,7 +15,7 @@
         else
         {
             <MudStack Reverse="@IsReversed" Spacing="12">
-                @foreach (var ((question, askedOn), answer) in _chatHistorySession.ChatHistory)
+                @foreach (var chatInteraction in _chatHistorySession.ChatHistory)
                 {
                     <MudStack Justify="Justify.Center" AlignItems="AlignItems.Start" Spacing="4">
                         <MudBadge Origin="Origin.TopLeft" Overlap="true" Color="Color.Secondary"
@@ -35,14 +35,14 @@
                             <MudPaper Class="pa-6 d-flex flex-column" Elevation="3">
 
                                 <MudText Typo="Typo.body1" Align="Align.End">
-                                    @question
+                                    @chatInteraction.Question.Question
                                 </MudText>
                                 <MudText Typo="Typo.caption" Align="Align.End" Color="Color.Secondary">
-                                    @($"Asked at {askedOn:h:mm:ss tt} on {askedOn:M/dd/yy}")
+                                    @($"Asked at {@chatInteraction.Question.AskedOn:h:mm:ss tt} on {@chatInteraction.Question.AskedOn:M/dd/yy}")
                                 </MudText>
                             </MudPaper>
-                            <button onclick="@(() => OnPinQuestion(question, askedOn))" class="mud-badge mud-badge-icon mud-badge-top right mud-elevation-0 mud-badge-overlap">
-                                <MudIcon Icon="@(PinIcon(question))" aria-label="pin" Variant="@Variant.Outlined"></MudIcon>
+                            <button onclick="@(() => OnPinQuestion(@chatInteraction.Question.Question, @chatInteraction.Question.AskedOn))" class="mud-badge mud-badge-icon mud-badge-top right mud-elevation-0 mud-badge-overlap">
+                                <MudIcon Icon="@(PinIcon(@chatInteraction.Question.Question))" aria-label="pin" Variant="@Variant.Outlined"></MudIcon>
                             </button>
                           @*   <MudIconButton 
                                 Icon="@(PinIcon(question))" aria-label="pin" 
@@ -51,7 +51,7 @@
                             </MudIconButton> *@
                         </MudBadge>
                         <div class="ten-twelves">
-                            @if (answer is null)
+                            @if (@chatInteraction.Response is null)
                             {
                                 <MudBadge Origin="Origin.TopLeft" Overlap="true" Color="Color.Secondary"
                                           Icon="@Icons.Material.Filled.Lightbulb" Class="full-width">
@@ -60,11 +60,11 @@
                                     </MudPaper>
                                 </MudBadge>
                             }
-                            else if (answer is { Error.Length: > 0 })
+                            else if (@chatInteraction.Response is { Error.Length: > 0 })
                             {
                                 <MudBadge Origin="Origin.TopLeft" Overlap="true" Color="Color.Error"
                                           Icon="@Icons.Material.Filled.Error">
-                                    <AnswerError Error="@answer" Question="@question"
+                                    <AnswerError Error="@chatInteraction.Response" Question="@chatInteraction.Question.Question"
                                                  OnRetryClicked="@OnAskQuestionAsync" />
                                 </MudBadge>
                             }
@@ -73,7 +73,7 @@
                                 <MudBadge Origin="Origin.TopLeft" Overlap="true" Color="Color.Secondary"
                                           Icon="@Icons.Material.Filled.AutoAwesome"
                                           Style="display:inherit">
-                                    <Answer Retort="@answer.Choices[0]" FollowupQuestionClicked="@OnAskQuestionAsync" />
+                                    <Answer Retort="@chatInteraction.Response.Choices[0]" FollowupQuestionClicked="@OnAskQuestionAsync" />
                                 </MudBadge>
                             }
                         </div>
