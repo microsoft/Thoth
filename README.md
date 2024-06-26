@@ -19,6 +19,16 @@ Retrieval Augmented Generation, or RAG pattern applications opinionated AI appli
 
 ![RAG Architecture](docs/appcomponents.png)
 
+## Features
+
+* Natural language chat UI and AI generative answers
+* RAG pattern via vector search on vector embedded documents (pdf, word, excel, images, ppt, html, tiff)
+* Token usage tracking and limit handling within a conversation, with transparency in UI for user
+* Save and delete persisted chat sessions by user
+* Pin favorite queries by user, displayed as suggested questions on chat page
+* blob triggered function to process, vector embed and index documents
+* dev utility console app for bulk process, vector embed and index a container of documents
+
 ## Application architecture
 
 ![Application Flow](docs/AppFlowDiagram.png)
@@ -32,15 +42,6 @@ Retrieval Augmented Generation, or RAG pattern applications opinionated AI appli
    - [**Document Intelligence**](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-4.0.0) – used for chunking the documents via the [pre-built layout model](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/concept-layout?view=doc-intel-4.0.0&tabs=sample-code) for advanced handling of different document types with tables and other structures.
    - [**Azure OpenAI Service**](https://learn.microsoft.com/azure/ai-services/openai/overview) – provides the Large Language Models to generate vectoring embeddings for the indexed document chunks.
    - [**Azure AI Search**](https://learn.microsoft.com/azure/search/search-what-is-azure-search) – indexes embedded document chunks from the data stored in an Azure Storage Account. This makes the documents searchable using [vector search](https://learn.microsoft.com/azure/search/search-get-started-vector) capabilities.    
-
-## Features
-
-* Natural language chat UI
-* Save and delete persisted chat sessions by user
-* Pin favorite queries by user, displayed as suggested questions on chat page
-* RAG pattern via vector search on vector embedded documents (pdf, word, excel, images, ppt, html, tiff)
-* blob triggered function to process, vector embed and index documents
-* dev utility console app for bulk process, vector embed and index a container of documents
 
 ## Getting Started
 This sample application, as deployed, includes the following Azure components.
@@ -90,17 +91,15 @@ A related option is VS Code Remote Containers, which will open the project in yo
 
 ### Deploying from scratch
 
-> **Important**<br>
-> Ensure Docker is running before running any `azd` provisioning / deployment commands.
-
 Execute the following command, if you don't have any pre-existing Azure services and want to start from a fresh deployment.
 
 1. Run `azd up` - This will provision Azure resources and deploy this sample to those resources, including building the search index based on the files found in the `./data` folder.
    - For the target location, see an up-to-date list of regions and models [here](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models)
    - If you have access to multiple Azure subscriptions, you will be prompted to select the subscription you want to use. If you only have access to one subscription, it will be selected automatically.
 
-   > **Note**<br>
+   > **Notes**<br>
    > This application uses the `gpt-4o` model. When choosing which region to deploy to, make sure they're available in that region (i.e. EastUS). For more information, see the [Azure OpenAI Service documentation](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models).
+   > This application also requires a preview version of Document Intelligence, which at the time of publishing this project is only available in EastUS or WestUS regions. Document processing will not work if not deployed in a region with this preview support. See [documentation](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-4.0.0) to check preview status and availability.
 
 1. After the application has been successfully deployed you will see a URL printed to the console. Click that URL to interact with the application in your browser.
 
@@ -197,7 +196,8 @@ This example is designed to be a starting point for your own production applicat
 * **OpenAI Capacity**: The default TPM (tokens per minute) is set to 30K. That is equivalent to approximately 30 conversation turns per minute (assuming 1K per user message/response). You can increase the capacity by changing the `chatGptDeploymentCapacity` and `embeddingDeploymentCapacity` parameters in `infra/main.bicep` to your account's maximum capacity. You can also view the Quotas tab in [Azure OpenAI studio](https://oai.azure.com/) to understand how much capacity you have. Additionally, consider securing [Provisioned Throughput Units (PTUs)](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/provisioned-throughput) for guaranteed capacity and predictable performance.
 * **API Management**: Use of the APIM gateway for managing calls to LLM deployments can improve security, scalability, latency, monitoring and analytics. At a minimum, failover to multiple backend model deployments on exceeding token limit to ensure uninterrupted availability. See [Introducing GenAI Gateway Capabilities in Azure API Management](https://techcommunity.microsoft.com/t5/azure-integration-services-blog/introducing-genai-gateway-capabilities-in-azure-api-management/ba-p/4146525) for more information.
 * **Azure AI Search**: If you see errors about search service capacity being exceeded, you may find it helpful to increase the number of replicas by changing `replicaCount` in `infra/core/search/search-services.bicep` or manually scaling it from the Azure Portal.
-* **Azure Doc Intelligence**: If documents are failing to process, embed and index, you may be hitting limitations due to select SKU. The free tier has a max document size of 4MB for processing through the layout model. For more information see [Input Requirements](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/concept-layout?view=doc-intel-4.0.0&tabs=sample-code#input-requirements).
+* **Azure Doc Intelligence Limits by SKU**: If documents are failing to process, embed and index, you may be hitting limitations due to select SKU. The free tier has a max document size of 4MB for processing through the layout model. For more information see [Input Requirements](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/concept-layout?view=doc-intel-4.0.0&tabs=sample-code#input-requirements).
+* **Azure Doc Intelligence Preview Support**: This project utilizes the preview v4.0 version of Document Intelligence in order to include support for O365 documents. This may not be suitable for production use, and is only available in certain regions at time of publishing this project. See [documentation](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-4.0.0) to check preview status and availability.
 * **Azure Storage**: The default storage account uses the `Standard_LRS` SKU. To improve your resiliency, consider using `Standard_ZRS` for production deployments, which you can specify using the `sku` property under the `storage` module in `infra/main.bicep`.
 
 ## Resources
@@ -211,6 +211,7 @@ This project started with the sample application below:
 * Deploys to App Service instead of Container App
 * Updated Azure OpenAI deployments (GPT-4o, text-embedding-3-small)
 * Upgraded to Doc Intelligence v4.0 preview SDK for Word document support
+* Added Token usage tracking and limit handling with conversation history, and transparency in UI
 * Added Cosmos DB for new feature support:
    * Chat Session history by user
    * Pinned queries by user
