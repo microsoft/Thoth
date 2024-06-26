@@ -5,10 +5,14 @@ targetScope = 'subscription'
 @maxLength(64)
 param environmentName string
 
-@description('Primary location for all resources')
+@description('Primary location for most resources')
 @allowed([ 'centralus', 'eastus2', 'eastasia', 'westus', 'westeurope', 'westus2', 'australiaeast', 'eastus', 'francecentral', 'japaneast', 'nortcentralus', 'swedencentral', 'switzerlandnorth', 'uksouth' ])
 param location string
 param tags string = ''
+
+@description('Document Intelligence location is in preview.  Regions are East US, West Us2, or West Europe')
+@allowed([ 'eastus', 'westus2'])
+param docIntLocation string
 
 @description('Location for the OpenAI resource group')
 @allowed([ 'canadaeast', 'westus', 'eastus', 'eastus2', 'francecentral', 'swedencentral', 'switzerlandnorth', 'uksouth', 'japaneast', 'northcentralus', 'australiaeast' ])
@@ -50,7 +54,7 @@ param embeddingDeploymentCapacity int = 30
 param azureEmbeddingModelName string = 'text-embedding-3-small'
 
 @description('Location of the resource group for the Form Recognizer service')
-param formRecognizerResourceGroupLocation string = location
+param formRecognizerResourceGroupLocation string = docIntLocation
 
 @description('Name of the resource group for the Form Recognizer service')
 param formRecognizerResourceGroupName string = ''
