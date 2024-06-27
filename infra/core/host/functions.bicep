@@ -6,9 +6,8 @@ param tags object = {}
 // Reference Properties
 param applicationInsightsName string = ''
 param appServicePlanId string
-param keyVaultName string = ''
-param managedIdentity bool = !empty(keyVaultName)
 param storageAccountName string
+param managedIdentity bool
 
 // Runtime Properties
 @allowed([
@@ -63,10 +62,8 @@ module functions 'appservice.bicep' = {
     enableOryxBuild: enableOryxBuild
     functionAppScaleLimit: functionAppScaleLimit
     healthCheckPath: healthCheckPath
-    keyVaultName: keyVaultName
     kind: kind
     linuxFxVersion: linuxFxVersion
-    managedIdentity: managedIdentity
     minimumElasticInstanceCount: minimumElasticInstanceCount
     numberOfWorkers: numberOfWorkers
     runtimeName: runtimeName
@@ -74,6 +71,7 @@ module functions 'appservice.bicep' = {
     runtimeNameAndVersion: runtimeNameAndVersion
     scmDoBuildDuringDeployment: scmDoBuildDuringDeployment
     use32BitWorkerProcess: use32BitWorkerProcess
+    managedIdentity: managedIdentity
   }
 }
 

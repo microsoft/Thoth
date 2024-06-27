@@ -72,15 +72,6 @@ param formRecognizerSkuName string = 'S0'
 @description('Name of the Azure Function App')
 param functionServiceName string = ''
 
-@description('Name of the Azure Key Vault')
-param keyVaultName string = ''
-
-@description('Location of the resource group for the Azure Key Vault')
-param keyVaultResourceGroupLocation string = location
-
-@description('Name of the resource group for the Azure Key Vault')
-param keyVaultResourceGroupName string = ''
-
 @description('Name of the Azure Log Analytics workspace')
 param logAnalyticsName string = ''
 
@@ -177,68 +168,6 @@ resource storageResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' ex
   name: !empty(storageResourceGroupName) ? storageResourceGroupName : resourceGroup.name
 }
 
-resource keyVaultResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = if (!empty(keyVaultResourceGroupName)) {
-  name: !empty(keyVaultResourceGroupName) ? keyVaultResourceGroupName : resourceGroup.name
-}
-
-// Store secrets in a keyvault
-module keyVault 'core/security/keyvault.bicep' = {
-  name: 'keyvault'
-  scope: keyVaultResourceGroup
-  params: {
-    name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVaultVaults}${resourceToken}'
-    location: keyVaultResourceGroupLocation
-    tags: updatedTags
-    principalId: principalId
-  }
-}
-
-module keyVaultSecrets 'core/security/keyvault-secrets.bicep' = {
-  scope: keyVaultResourceGroup
-  name: 'keyvault-secrets'
-  params: {
-    keyVaultName: keyVault.outputs.name
-    tags: updatedTags
-    secrets: concat([
-      {
-        name: 'AzureSearchServiceEndpoint'
-        value: searchService.outputs.endpoint
-      }
-      {
-        name: 'AzureSearchIndex'
-        value: searchIndexName
-      }
-      {
-        name: 'AzureStorageAccountEndpoint'
-        value: storage.outputs.primaryEndpoints.blob
-      }
-      {
-        name: 'AzureStorageContainer'
-        value: storageContainerName
-      }
-      {
-        name: 'UseAOAI'
-        value: useAOAI ? 'true' : 'false'
-      }
-    ],
-    [
-      {
-        name: 'AzureOpenAiServiceEndpoint'
-        value: azureOpenAi.outputs.endpoint
-      }
-      {
-        name: 'AzureOpenAiChatGptDeployment'
-        value: azureChatGptDeploymentName
-      }
-      {
-        name: 'AzureOpenAiEmbeddingDeployment'
-        value: azureEmbeddingDeploymentName
-      }
-    ]
-    )
-  }
-}
-
 // Web frontend
 module web './app/web.bicep' = {
   name: 'web'
@@ -262,6 +191,7 @@ module web './app/web.bicep' = {
     openAiEmbeddingDeployment: useAOAI ? azureEmbeddingDeploymentName : ''
     useAOAI: useAOAI
     cosmosEndpoint: database.outputs.endpoint
+    useManagedIdentity: true
   }
 }
 
@@ -290,9 +220,9 @@ module function './app/function.bicep' = {
     tags: updatedTags
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     appServicePlanId: appServicePlan.outputs.id
-    keyVaultName: keyVault.outputs.name
     storageAccountName: storage.outputs.name
     allowedOrigins: [ web.outputs.SERVICE_WEB_URI ]
+    useManagedIdentity: true
     appSettings: {
       AZURE_FORMRECOGNIZER_SERVICE_ENDPOINT: formRecognizer.outputs.endpoint
       AZURE_SEARCH_SERVICE_ENDPOINT: searchService.outputs.endpoint
@@ -622,6 +552,16 @@ module storageContribRoleBackend 'core/security/role.bicep' = {
   }
 }
 
+module cosmosReaderRoleBackend 'core/security/cosmosdb-role.bicep' = {
+  scope: storageResourceGroup
+  name: 'cosmos-reader-role-backend'
+  params: {
+    identityPrincipalId: web.outputs.SERVICE_WEB_IDENTITY_PRINCIPAL_ID
+    roleDefinitionId: '00000000-0000-0000-0000-000000000001'
+    cosmos_account_name: database.outputs.accountName
+  }
+}
+
 module searchRoleBackend 'core/security/role.bicep' = {
   scope: searchServiceResourceGroup
   name: 'search-role-backend'
@@ -637,9 +577,6 @@ output APPLICATIONINSIGHTS_NAME string = monitoring.outputs.applicationInsightsN
 output AZURE_FORMRECOGNIZER_RESOURCE_GROUP string = formRecognizerResourceGroup.name
 output AZURE_FORMRECOGNIZER_SERVICE string = formRecognizer.outputs.name
 output AZURE_FORMRECOGNIZER_SERVICE_ENDPOINT string = formRecognizer.outputs.endpoint
-output AZURE_KEY_VAULT_ENDPOINT string = keyVault.outputs.endpoint
-output AZURE_KEY_VAULT_NAME string = keyVault.outputs.name
-output AZURE_KEY_VAULT_RESOURCE_GROUP string = keyVaultResourceGroup.name
 output AZURE_LOCATION string = location
 output AZURE_OPENAI_RESOURCE_LOCATION string = openAiResourceGroupLocation
 output AZURE_OPENAI_CHATGPT_DEPLOYMENT string = azureChatGptDeploymentName

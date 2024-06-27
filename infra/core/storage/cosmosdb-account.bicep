@@ -8,6 +8,7 @@ param defaultConsistencyLevel string = 'Session'
 param maxIntervalInSeconds int = 5
 param maxStalenessPrefix int = 100
 param enableServerless bool = true
+param userAssignedIdentityId string = ''
 
 resource cosmos_account 'Microsoft.DocumentDB/databaseAccounts@2024-02-15-preview' = {
   name: accountName

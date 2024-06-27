@@ -44,11 +44,7 @@ param useAOAI bool = true
 @description('The Cosmos DB endpoint')
 param cosmosEndpoint string
 
-
-resource webIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: identityName
-  location: location
-}
+param useManagedIdentity bool
 
 // Runtime Properties
 @allowed([
@@ -71,7 +67,6 @@ param use32BitWorkerProcess bool = false
 
 var appSettings = {
   
-    AZURE_CLIENT_ID: webIdentity.properties.clientId
     APPLICATIONINSIGHTS_CONNECTION_STRING: !empty(applicationInsightsName) ? applicationInsights.properties.ConnectionString : ''
     AZURE_STORAGE_BLOB_ENDPOINT: storageBlobEndpoint
     AZURE_STORAGE_CONTAINER: storageContainerName
@@ -107,13 +102,7 @@ module app '../core/host/appservice.bicep' = {
     applicationInsightsName: applicationInsightsName
     appServicePlanId: appServicePlan.outputs.id
     clientAffinityEnabled: clientAffinityEnabled
-    enableOryxBuild: enableOryxBuild
-    userIdentity: {
-      type: 'UserAssigned'
-      userAssignedIdentities: {
-        '${webIdentity.id}': {}
-      }
-    }
+    enableOryxBuild: enableOryxBuild    
     kind: kind
     linuxFxVersion: linuxFxVersion
     runtimeName: runtimeName
@@ -121,6 +110,7 @@ module app '../core/host/appservice.bicep' = {
     runtimeNameAndVersion: runtimeNameAndVersion
     scmDoBuildDuringDeployment: scmDoBuildDuringDeployment
     use32BitWorkerProcess: use32BitWorkerProcess
+    managedIdentity: useManagedIdentity
   }
 }
 
@@ -137,6 +127,6 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing
 }
 
 output SERVICE_WEB_IDENTITY_NAME string = identityName
-output SERVICE_WEB_IDENTITY_PRINCIPAL_ID string = webIdentity.properties.principalId
+output SERVICE_WEB_IDENTITY_PRINCIPAL_ID string = app.outputs.identityPrincipalId
 output SERVICE_WEB_NAME string = app.outputs.name
 output SERVICE_WEB_URI string = app.outputs.uri
