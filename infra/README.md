@@ -103,3 +103,5 @@ Click the `Backends` blade to see the primary and secondary backends defined:
 
 ![Backends](../docs/APIM_Backends.png)
 
+## Configure App Settings to use the gateway
+TODO
