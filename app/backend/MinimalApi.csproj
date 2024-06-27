@@ -29,11 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Prompts\**\*.json" />
-    <EmbeddedResource Include="Prompts\**\*.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\frontend\ClientApp.csproj" />
     <ProjectReference Include="..\shared\Shared\Shared.csproj" />
   </ItemGroup>
