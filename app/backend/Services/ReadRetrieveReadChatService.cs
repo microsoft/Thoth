@@ -138,7 +138,6 @@ public class ReadRetrieveReadChatService
             ## End ##
             Provide brief thoughts on how you came up with the answer, e.g. what sources you used, what you thought about, etc.
             If you can't answer a question with the information available in the source, please say you can't answer it. Do not use general knowledge.
-            Add a source reference to the end of each sentence. e.g. Apple is a fruit [reference1.pdf][reference2.pdf].
             Your answer always will be in valid json whether you find relevant data or not.
             {
                 "answer": "There is no information available on that subject.",
@@ -146,7 +145,7 @@ public class ReadRetrieveReadChatService
             }
             ## Valid Answer Example: ##
             {
-                "answer": "If the patient discloses after you have already started seeing them for other reasons and the note was already written. [reference1.pdf][reference2.pdf]",
+                "answer": "If the patient discloses after you have already started seeing them for other reasons and the note was already written.",
                 "thoughts": "I found a similar case in document x and used that to extrapolate an answer."
             }
             ## End Example ##

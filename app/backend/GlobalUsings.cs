@@ -10,7 +10,6 @@ global using Azure.Search.Documents;
 global using Azure.Search.Documents.Models;
 global using Azure.Storage.Blobs;
 global using Azure.Storage.Blobs.Models;
-global using Azure.Storage.Sas;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Mvc.RazorPages;
 global using Microsoft.SemanticKernel;

@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Azure.Storage.Blobs.Specialized;
-using Markdig.Helpers;
-
 namespace MinimalApi.Extensions;
 
 internal static class WebApplicationExtensions
@@ -77,24 +74,16 @@ internal static class WebApplicationExtensions
 
 	private static async IAsyncEnumerable<DocumentResponse> OnGetDocumentsAsync(
 		BlobContainerClient client,
-		BlobServiceClient serviceClient,
-		IConfiguration config,
 		[EnumeratorCancellation] CancellationToken cancellationToken)
 	{
-		var useBlobSas = bool.Parse(config["AZURE_STORAGE_USE_BLOB_SAS"] ?? "false");
-		var udk = (await serviceClient.GetUserDelegationKeyAsync(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddMinutes(5), cancellationToken)).Value;
-
 		await foreach (var blob in client.GetBlobsAsync(cancellationToken: cancellationToken))
 		{
 			if (blob is not null and { Deleted: false })
 			{
-				// make the blobclient give us a short-lived SAS token HERE
-				var blobClient = client.GetBlobClient(blob.Name);
 				var props = blob.Properties;
 				var baseUri = client.Uri;
 				var builder = new UriBuilder(baseUri);
 				builder.Path += $"/{blob.Name}";
-				var blobUriSas = CreateUserDelegationSASBlob(blobClient, udk);
 
 				var metadata = blob.Metadata;
 				var documentProcessingStatus = GetMetadataEnumOrDefault<DocumentProcessingStatus>(
@@ -107,7 +96,7 @@ internal static class WebApplicationExtensions
 					props.ContentType,
 					props.ContentLength ?? 0,
 					props.LastModified,
-					useBlobSas ? blobUriSas : builder.Uri,
+					builder.Uri,
 					documentProcessingStatus,
 					embeddingType);
 
@@ -319,36 +308,5 @@ internal static class WebApplicationExtensions
 		var header = context.Request.Headers["X-MS-CLIENT-PRINCIPAL-ID"];
 		var userName = !string.IsNullOrEmpty(header) ? header.ToString() : "localuser";
 		return userName;
-	}
-
-	private static Uri CreateUserDelegationSASBlob(
-		BlobClient blobClient,
-		UserDelegationKey userDelegationKey)
-	{
-		// Create a SAS token for the blob resource that's also valid for 1 day
-		BlobSasBuilder sasBuilder = new BlobSasBuilder()
-		{
-			BlobContainerName = blobClient.BlobContainerName,
-			BlobName = blobClient.Name,
-			Resource = "b",
-			StartsOn = DateTimeOffset.UtcNow,
-			ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(5)
-		};
-
-		// Specify the necessary permissions
-		sasBuilder.SetPermissions(BlobSasPermissions.Read);
-
-		// Add the SAS token to the blob URI
-		BlobUriBuilder uriBuilder = new BlobUriBuilder(blobClient.Uri)
-		{
-			// Specify the user delegation key
-			Sas = sasBuilder.ToSasQueryParameters(
-				userDelegationKey,
-				blobClient
-				.GetParentBlobContainerClient()
-				.GetParentBlobServiceClient().AccountName)
-		};
-
-		return uriBuilder.ToUri();
 	}
 }

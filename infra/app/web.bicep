@@ -44,9 +44,6 @@ param useAOAI bool = true
 @description('The Cosmos DB endpoint')
 param cosmosEndpoint string
 
-@description('Whether to use generated SAS keys for blob storage file preview')
-param useBlobSas bool = false
-
 param useManagedIdentity bool
 
 // Runtime Properties
@@ -82,7 +79,6 @@ var appSettings = {
     COSMOS_HISTORY_ENDPOINT: cosmosEndpoint
     OPENAI_API_KEY: openAiApiKey
     USE_AOAI: useAOAI ? 'true' : 'false'
-    AZURE_STORAGE_USE_BLOB_SAS: useBlobSas ? 'true' : 'false'
 }
 
 module appServicePlan '../core/host/appserviceplan.bicep' = {

@@ -40,7 +40,7 @@ public sealed partial class Answer
                 }
 
                 return $"""
-                    <sup>{citationNumber}</sup>
+                    <sup class="mud-chip mud-chip-text mud-chip-color-info rounded pa-1">{citationNumber}</sup>
                     """;
             }
         });
