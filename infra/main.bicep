@@ -562,6 +562,16 @@ module cosmosReaderRoleBackend 'core/security/cosmosdb-role.bicep' = {
   }
 }
 
+module cosmosContributorRoleBackend 'core/security/cosmosdb-role.bicep' = {
+  scope: storageResourceGroup
+  name: 'cosmos-contributor-role-backend'
+  params: {
+    identityPrincipalId: web.outputs.SERVICE_WEB_IDENTITY_PRINCIPAL_ID
+    roleDefinitionId: '00000000-0000-0000-0000-000000000002'
+    cosmos_account_name: database.outputs.accountName
+  }
+}
+
 module searchRoleBackend 'core/security/role.bicep' = {
   scope: searchServiceResourceGroup
   name: 'search-role-backend'
