@@ -7,9 +7,9 @@ param applicationInsightsName string = ''
 param appServicePlanId string
 @secure()
 param appSettings object = {}
-param keyVaultName string
 param serviceName string = 'function'
 param storageAccountName string
+param useManagedIdentity bool
 
 module function '../core/host/functions.bicep' = {
   name: '${serviceName}-function'
@@ -22,11 +22,11 @@ module function '../core/host/functions.bicep' = {
     appSettings: appSettings
     applicationInsightsName: applicationInsightsName
     appServicePlanId: appServicePlanId
-    keyVaultName: keyVaultName
     runtimeName: 'dotnet-isolated'
     runtimeVersion: '8.0'
     storageAccountName: storageAccountName
     scmDoBuildDuringDeployment: false
+    managedIdentity: useManagedIdentity
   }
 }
 
