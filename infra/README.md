@@ -58,7 +58,7 @@ To enable persistence of chat session history and pinning of preferred queries p
 
 
 ## Optionally Deploy and Configure APIM
-Using the Azure CLI, use the `main.bicep` template to deploy and setup APIM for Azure OpenAI connectivity.
+Using the Azure CLI, use the `gatewayOnly.bicep` template to deploy and setup APIM for Azure OpenAI connectivity.
 
 ```powershell
 az deployment group create -g [RESOURCE_GROUP_NAME] --template-file gatewayOnly.bicep --parameters "aoaiPrimaryAccount=[AZURE_OPENAI_NAME]" --parameters "aoaiSecondaryAccount=[AZURE_OPENAI_NAME]" --parameters "applicationInsightsName=[APP_INSIGHTS_NAME]"
