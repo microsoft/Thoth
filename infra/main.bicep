@@ -612,3 +612,4 @@ output OPENAI_EMBEDDING_DEPLOYMENT string = openAiEmbeddingDeployment
 output AZURE_OPENAI_CHATGPT_MODEL_VERSION string = azureOpenAIChatGptModelVersion
 output AZURE_OPENAI_CHATGPT_MODEL_NAME string = azureOpenAIChatGptModelName
 output COSMOS_HISTORY_ENDPOINT string = database.outputs.endpoint
+output AZURE_DOCUMENT_INTELLIGENCE_LOCATION string = docIntPreviewLocation_See_Help
