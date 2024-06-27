@@ -92,6 +92,21 @@ This project supports `azd` for easy deployment of the complete application, as 
 
 See [Deployment Instructions here](./infra/README.md).
 
+### Process documents into the Search Service with Blob trigger
+
+- In Azure: navigate to the deployed storage account.
+- Browse into the `Data storage/Containers` blade and into the `content` container.
+- Click `Upload` and add documents to be processed.
+- Confirm successful indexing:
+   - A new `corpus` container will be created in the storage account for processed documents.
+   - A new `gptkbindex` index will be created in the AI Search Service. Open and search in the index to confirm content is properly searchable.
+
+> [!NOTE]<br>
+> It may take several minutes to see processed documents in the index
+
+### Process documents in bulk with console app
+TODO
+
 ### Run the deployed app
 
 - In Azure: navigate to the Azure App Service deployed by `azd`. The URL is printed out when `azd` completes (as "Endpoint"), or you can find it in the Azure portal.
@@ -101,7 +116,10 @@ Once in the web app:
 
 - Try different topics in **Chat** context. For chat, try follow up questions, clarifications, ask to simplify or elaborate on answer, etc.
 - Explore citations and sources
-- Click on the "settings" icon to try different options, tweak prompts, etc.
+- Pin favorite question for easy asking later
+- Click the history icon at the top to view past chat sessions
+
+![Client UI](./docs/Client_UI.png)
 
 ### Tracing in App Insights
 
@@ -118,7 +136,9 @@ Run `azd down`
 ## Running locally for Dev and Debug
 
 ### First time setup
+
 1. Set up a `local.settings.json` file:
+
 ``` json
 {
     "Logging": {
@@ -141,6 +161,7 @@ Run `azd down`
     "USE_AOAI":  "true"
   }
 ```
+
 2. Configure role-based access to Cosmos for your identity:
    * Run `azd auth login`
    * Run the following command, replacing with your deployed values:
