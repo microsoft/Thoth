@@ -21,19 +21,20 @@ Execute the following command, if you don't have any pre-existing Azure services
 1. Run `azd up` - This will provision Azure resources and deploy this sample to those resources.
    - For the target location, see an up-to-date list of regions and models [here](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models)
    - If you have access to multiple Azure subscriptions, you will be prompted to select the subscription you want to use. If you only have access to one subscription, it will be selected automatically.
+   - You will be prompted for the target location of the Document Intelligence service separately, since v4.0 (currently in preview) is required for this app. See [documentation](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-4.0.0) to check preview status and availability.
 
-   > **Notes**<br>
-   > This application uses the `gpt-4o` model. When choosing which region to deploy to, make sure they're available in that region (i.e. EastUS). For more information, see the [Azure OpenAI Service documentation](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models).
-   > This application also requires a preview version of Document Intelligence (for O365 document support), which at the time of publishing this project is only available in EastUS or WestUS2 or WestEurope regions. Document processing will not work if not deployed in a region with this preview support. See [documentation](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-4.0.0) to check preview status and availability.
+   > [!NOTE]<br>
+   > This application uses the `gpt-4o` model. When choosing which region to deploy to, make sure the desired model is available in that region (i.e. EastUS). For more information, see the [Azure OpenAI Service documentation](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models).<br><br>
+   > This application also requires a preview version of Document Intelligence (for O365 document support), which at the time of publishing this project is only available in EastUS, WestUS2 or WestEurope regions. Document processing will not work if deployed in a region without this preview support. See [documentation](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-4.0.0) to check preview status and availability.
 
-1. After the application has been successfully deployed you will see a URL printed to the console. Click that URL to interact with the application in your browser.
+1. After the application has been successfully deployed you will see two URLs printed to the console, one for the Function (document processing), and one for the app. Click that URL for the `service web` to interact with the application in your browser.
 
 It will look like the following:
 
-!['Output from running azd up'](../assets/endpoint.png)
+!['Output from running azd up'](../docs/endpoints_success.png)
 
 > [!NOTE]<br>
-> It may take a few minutes for the application to be fully deployed.
+> It may take several minutes for the application to be fully deployed.
 
 ### Use existing resources
 
