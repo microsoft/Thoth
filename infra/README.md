@@ -61,12 +61,12 @@ To enable persistence of chat session history and pinning of preferred queries p
 Using the Azure CLI, use the `main.bicep` template to deploy and setup APIM for Azure OpenAI connectivity.
 
 ```powershell
-az deployment group create -g rg-hygeia --template-file main.bicep --parameters "aoaiPrimaryAccount=[AZURE_OPENAI_NAME]" --parameters "aoaiSecondaryAccount=[AZURE_OPENAI_NAME]" --parameters "sku=[SKU_NAME]" --parameters "applicationInsightsName=[APP_INSIGHTS_NAME]"
+az deployment group create -g [RESOURCE_GROUP_NAME] --template-file gatewayOnly.bicep --parameters "aoaiPrimaryAccount=[AZURE_OPENAI_NAME]" --parameters "aoaiSecondaryAccount=[AZURE_OPENAI_NAME]" --parameters "applicationInsightsName=[APP_INSIGHTS_NAME]"
 ```
 
-* [AZURE_OPENAI_NAME]: The resource name your Azure OpenAI deployments are in. If you only have one Azure OpenAI resource, you can use the same name in both Primary and Secondary. The policy to enable fail over is included as an example, but is not enabled by default.
-* [SKU_NAME]: Options are: 'Consumption' 'Developer' 'Standard' 'Premium'
-* [APP_INSIGHTS_NAME]: name of App Insights resource for logging
+* `[RESOURCE_GROUP_NAME]`: Name of the resource group to deploy to
+* `[AZURE_OPENAI_NAME]`: The resource name your Azure OpenAI deployments are in. If you only have one Azure OpenAI resource, you can use the same name in both Primary and Secondary. The policy to enable fail over is included as an example, but is not enabled by default.
+* `[APP_INSIGHTS_NAME]`: name of App Insights resource for logging
 
 Use the optional parameters below by adding each in the following format to the command above:
 
@@ -77,7 +77,9 @@ Use the optional parameters below by adding each in the following format to the 
 | Parameter | Use | Value |
 |---|---|---|
 | apimName | if deploying to an existing APIM resource | the name of the APIM resource |
-| managedIdentityPrincipalName | if not included, APIM will be provisioned with a system defined identity. Use this parameter to specifiy a user-defined identity instead | the name of the service principal to set as the managed identity
+| managedIdentityPrincipalName | if not included, APIM will be provisioned with a system defined identity. Use this parameter to specifiy a user-defined identity instead | the name of the service principal to set as the managed identity |
+| sku | specify the desired sku (default is consumption) | Options are: 'Consumption' 'Developer' 'Standard' 'Premium' |
+| skuCount | if specifying the sku, this may be required to define the instance size | Options are: 0, 1, 2 |
 
 ### Check the APIM Deployment
 
