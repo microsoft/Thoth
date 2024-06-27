@@ -4,15 +4,16 @@ targetScope = 'resourceGroup'
 @description('Name of existing user assigned identity. Will default to SystemAssigned if empty.')
 param managedIdentityPrincipalName string = ''
 param location string = resourceGroup().location
-param prefix string = 'hygeia${uniqueString(resourceGroup().id)}'
-param aoaiPrimaryAccount string = 'km-openai-e8a8fe'
-param aoaiSecondaryAccount string = 'km-openai-e8a8fe'
+param prefix string = 'thoth${uniqueString(resourceGroup().id)}'
+param aoaiPrimaryAccount string = ''
+param aoaiSecondaryAccount string = ''
 param applicationInsightsName string = '${prefix}-ai'
 param tags object = {}
 param apimName string = '${prefix}-apim'
 param sku string = 'Consumption'
+param skuCount int = 0
 
-module apim 'modules/gateway/apim.bicep' = {
+module apim 'core/gateway/apim.bicep' = {
   name: 'apim'
   params: {
     tags: tags
@@ -22,10 +23,11 @@ module apim 'modules/gateway/apim.bicep' = {
     sku: sku
     aoaiPrimaryAccount: aoaiPrimaryAccount
     aoaiSecondaryAccount: aoaiSecondaryAccount
+    skuCount: skuCount
   }
 }
 
-module aoaiApi 'modules/gateway/openai-apim-api.bicep' = {
+module aoaiApi 'core/gateway/openai-apim-api.bicep' = {
   name: 'aoaiApi'
   params: {
     apiManagementServiceName: apim.outputs.apimServiceName
