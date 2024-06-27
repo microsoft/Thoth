@@ -24,7 +24,7 @@ Execute the following command, if you don't have any pre-existing Azure services
 
    > **Notes**<br>
    > This application uses the `gpt-4o` model. When choosing which region to deploy to, make sure they're available in that region (i.e. EastUS). For more information, see the [Azure OpenAI Service documentation](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models).
-   > This application also requires a preview version of Document Intelligence (for O365 document support), which at the time of publishing this project is only available in EastUS or WestUS regions. Document processing will not work if not deployed in a region with this preview support. See [documentation](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-4.0.0) to check preview status and availability.
+   > This application also requires a preview version of Document Intelligence (for O365 document support), which at the time of publishing this project is only available in EastUS or WestUS2 or WestEurope regions. Document processing will not work if not deployed in a region with this preview support. See [documentation](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-4.0.0) to check preview status and availability.
 
 1. After the application has been successfully deployed you will see a URL printed to the console. Click that URL to interact with the application in your browser.
 
