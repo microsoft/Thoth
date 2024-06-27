@@ -88,48 +88,9 @@ A related option is VS Code Remote Containers, which will open the project in yo
 [![Open in Remote - Containers](https://img.shields.io/static/v1?style=for-the-badge&label=Remote%20-%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/azure-samples/azure-search-openai-demo-csharp)
 
 ## Deployment
+This project supports `azd` for easy deployment of the complete application, as defined in the main.bicep resources. Standalone APIM gateway only templates are also included for optionally deploying and configuring an Azure API Management gateway to use in between the application and Azure OpenAI deployments for scalability and failover.  
 
-### Deploying from scratch
-
-Execute the following command, if you don't have any pre-existing Azure services and want to start from a fresh deployment.
-
-1. Run `azd up` - This will provision Azure resources and deploy this sample to those resources, including building the search index based on the files found in the `./data` folder.
-   - For the target location, see an up-to-date list of regions and models [here](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models)
-   - If you have access to multiple Azure subscriptions, you will be prompted to select the subscription you want to use. If you only have access to one subscription, it will be selected automatically.
-
-   > **Notes**<br>
-   > This application uses the `gpt-4o` model. When choosing which region to deploy to, make sure they're available in that region (i.e. EastUS). For more information, see the [Azure OpenAI Service documentation](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models).
-   > This application also requires a preview version of Document Intelligence, which at the time of publishing this project is only available in EastUS or WestUS regions. Document processing will not work if not deployed in a region with this preview support. See [documentation](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-4.0.0) to check preview status and availability.
-
-1. After the application has been successfully deployed you will see a URL printed to the console. Click that URL to interact with the application in your browser.
-
-It will look like the following:
-
-!['Output from running azd up'](assets/endpoint.png)
-
-> [!NOTE]<br>
-> It may take a few minutes for the application to be fully deployed.
-
-### Use existing resources
-
-If you have existing resources in Azure that you wish to use, you can configure `azd` to use those by setting the following `azd` environment variables:
-
-1. Run `azd env set AZURE_OPENAI_SERVICE {Name of existing OpenAI service}`
-1. Run `azd env set AZURE_OPENAI_RESOURCE_GROUP {Name of existing resource group that OpenAI service is provisioned to}`
-1. Run `azd env set AZURE_OPENAI_CHATGPT_DEPLOYMENT {Name of existing ChatGPT deployment}`. Only needed if your ChatGPT deployment is not the default 'chat'.
-1. Run `azd env set AZURE_OPENAI_EMBEDDING_DEPLOYMENT {Name of existing embedding model deployment}`. Only needed if your embedding model deployment is not the default `embedding`.
-1. Run `azd up`
-
-> [!NOTE]<br> 
-> You can also use existing Search and Storage Accounts. See `./infra/main.parameters.json` for list of environment variables to pass to `azd env set` to configure those existing resources.
-
-### Configure UI Authentication
-To enable persistence of chat session history and pinning of preferred queries per user, authentication needs to be enabled on the deployed App Service that hosts the minimal API and web client. 
-
-1. In the Azure portal, find and open the deployed App Service
-1. Browse into the `Settings/Authentication` blade and click `Add identity provider`
-1. To use Azure Entra for user sign-in, select Microsoft as the identity provider, leave all default settings, and click `Add`. 
-1. Return to the Overview blade of the App Service, and restart.
+See [Deployment Instructions here](./infra/README.md).
 
 ### Run the deployed app
 
@@ -156,7 +117,8 @@ Run `azd down`
 
 ## Running locally for Dev and Debug
 
-Set up a `local.settings.json` file:
+### First time setup
+1. Set up a `local.settings.json` file:
 ``` json
 {
     "Logging": {
@@ -179,7 +141,14 @@ Set up a `local.settings.json` file:
     "USE_AOAI":  "true"
   }
 ```
+2. Configure role-based access to Cosmos for your identity:
+   * Run `azd auth login`
+   * Run the following command, replacing with your deployed values:
+   ```powershell
+   az cosmosdb sql role assignment create --account-name [COSMOS_RESOURCE_NAME] --resource-group [RESOURCE_GROUP_NAME] --scope "/" --principal-id [ENTRA_USER_OBJECT_ID] --role-definition-id /subscriptions/[SUBSCRIPTION_ID]/resourceGroups/[RESOURCE_GROUP_NAME]/providers/Microsoft.DocumentDB/databaseAccounts/[COSMOS_RESOURCE_NAME]/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002
+   ```
 
+### Build and run locally
 1. Run `azd auth login`
 1. Run the following .NET CLI command to start the ASP.NET Core Minimal API server (client host):
 
