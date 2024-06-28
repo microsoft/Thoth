@@ -146,6 +146,7 @@ public sealed partial class AzureSearchEmbedService(
 		logger?.LogInformation(
 			 "Extracting text from '{Blob}' using Azure Form Recognizer", blobName);
 
+		blobStream.Position = 0;
 		using var ms = new MemoryStream();
 		await blobStream.CopyToAsync(ms);
 		ms.Position = 0;
