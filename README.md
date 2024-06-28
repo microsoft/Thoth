@@ -105,7 +105,33 @@ See [Deployment Instructions here](./infra/README.md).
 > It may take several minutes to see processed documents in the index
 
 ### Process documents in bulk with console app
-TODO
+
+The console app provides the ability to bulk process all documents already existing in a blob container. This could be the `content` container in the storage account if the documents were already there before deploying and running the blob-triggered function app. 
+
+To initiate bulk processing of these documents:
+
+1. Open a cmd terminal
+1. Ensure you are working in the `PrepareDocs` directory
+   ```
+   cd app\prepdocs\PrepareDocs
+   ```
+1. Build the console app:
+   ```
+   dotnet build
+   ```
+1. Set the USE_AOAI environment variable to `true` 
+   ```
+   set USE_AOAI=true
+   set
+   ```
+1. Run the console app, with parameters. You can get the values of the parameters from the `Settings/Environment` Variables blade of your deployed App Service.
+   ```
+   dotnet run --storageendpoint "[AZURE_STORAGE_BLOB_ENDPOINT]" --container "[AZURE_STORAGE_CONTAINER]" --searchendpoint "[AZURE_SEARCH_SERVICE_ENDPOINT]" --searchindex "gptkbindex" --openaiendpoint "[AZURE_OPENAI_ENDPOINT]" --embeddingmodel "embedding" --formrecognizerendpoint "[AZURE_FORMRECOGNIZER_SERVICE_ENDPOINT]" --batchsize 25 --waittime 30
+   ```
+1. The terminal log should list all documents (in batches) processed.
+1. Confirm successful indexing:
+   - A `corpus` container will be created (if didn't exist) in the storage account for processed documents. Chunks of each document will be found here. 
+   - A `gptkbindex` index will be created in the AI Search Service (if didn't exist). Open and search in the index to confirm content is properly searchable.
 
 ### Run the deployed app
 
