@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading;
 using Azure.Storage.Blobs.Specialized;
 using Markdig.Helpers;
 
@@ -81,8 +82,7 @@ internal static class WebApplicationExtensions
 		IConfiguration config,
 		[EnumeratorCancellation] CancellationToken cancellationToken)
 	{
-		var useBlobSas = bool.Parse(config["AZURE_STORAGE_USE_BLOB_SAS"] ?? "false");
-		var udk = (await serviceClient.GetUserDelegationKeyAsync(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddMinutes(5), cancellationToken)).Value;
+		var useBlobSas = bool.Parse(config["AZURE_STORAGE_USE_BLOB_SAS"] ?? "false");		
 
 		await foreach (var blob in client.GetBlobsAsync(cancellationToken: cancellationToken))
 		{
@@ -94,7 +94,7 @@ internal static class WebApplicationExtensions
 				var baseUri = client.Uri;
 				var builder = new UriBuilder(baseUri);
 				builder.Path += $"/{blob.Name}";
-				var blobUriSas = CreateUserDelegationSASBlob(blobClient, udk);
+				var blobUri = useBlobSas ? await CreateUserDelegationSASBlobAsync(blobClient, serviceClient, cancellationToken) : builder.Uri;
 
 				var metadata = blob.Metadata;
 				var documentProcessingStatus = GetMetadataEnumOrDefault<DocumentProcessingStatus>(
@@ -107,7 +107,7 @@ internal static class WebApplicationExtensions
 					props.ContentType,
 					props.ContentLength ?? 0,
 					props.LastModified,
-					useBlobSas ? blobUriSas : builder.Uri,
+					blobUri,
 					documentProcessingStatus,
 					embeddingType);
 
@@ -321,10 +321,13 @@ internal static class WebApplicationExtensions
 		return userName;
 	}
 
-	private static Uri CreateUserDelegationSASBlob(
+	private static async Task<Uri> CreateUserDelegationSASBlobAsync(
 		BlobClient blobClient,
-		UserDelegationKey userDelegationKey)
+		BlobServiceClient serviceClient,
+		CancellationToken cancellationToken)
 	{
+		// Get a user delegation key for the blob client
+		var udk = (await serviceClient.GetUserDelegationKeyAsync(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddMinutes(5), cancellationToken)).Value;
 		// Create a SAS token for the blob resource that's also valid for 1 day
 		BlobSasBuilder sasBuilder = new BlobSasBuilder()
 		{
@@ -343,10 +346,8 @@ internal static class WebApplicationExtensions
 		{
 			// Specify the user delegation key
 			Sas = sasBuilder.ToSasQueryParameters(
-				userDelegationKey,
-				blobClient
-				.GetParentBlobContainerClient()
-				.GetParentBlobServiceClient().AccountName)
+				udk,
+				serviceClient.AccountName)
 		};
 
 		return uriBuilder.ToUri();
