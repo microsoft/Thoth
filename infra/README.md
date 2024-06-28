@@ -104,4 +104,17 @@ Click the `Backends` blade to see the primary and secondary backends defined:
 ![Backends](../docs/APIM_Backends.png)
 
 ## Configure App Settings to use the gateway
-TODO
+
+To configure the Chat app backend to call Azure OpenAI through the APIM gateway, update the `AZURE_OPENAI_ENDPOINT` for the deployed App Service. 
+
+1. In Azure, open the deployed API Management resource and click into the `APIs/APIs` blade. Select the `Azure OpenAI Service API` definition and `Settings` tab to find the `Base URL`.
+1. In Azure, open the deployed App Service and click into the `Settings/Environment Variables` blade. Find and update the `AZURE_OPENAI_ENDPOINT` value to the Base URL from the previous step, ensuring the endpoint ends with a `/`.
+1. Restart the App Service.
+1. Test with questions in the chat UI to ensure generative answers are still working. 
+
+![APIM Azure OpenAI API Base URL](../docs/APIM_BaseURL.png)
+
+![AZURE_OPENAI_ENDPOINT set to APIM OpenAI API Endpoint](../docs/AppService_APIM_OpenAI_Endpoint_Setting.png)
+
+> [!NOTE] <br>
+> The AZURE_OPENAI_ENDPOINT setting must end with a `/`. When set to the Base URL for the Azure OpenAI Service API gateway as configured, it should end in `/openai/`
