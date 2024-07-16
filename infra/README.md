@@ -21,19 +21,20 @@ Execute the following command, if you don't have any pre-existing Azure services
 1. Run `azd up` - This will provision Azure resources and deploy this sample to those resources.
    - For the target location, see an up-to-date list of regions and models [here](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models)
    - If you have access to multiple Azure subscriptions, you will be prompted to select the subscription you want to use. If you only have access to one subscription, it will be selected automatically.
+   - You will be prompted for the target location of the Document Intelligence service separately, since v4.0 (currently in preview) is required for this app. See [documentation](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-4.0.0) to check preview status and availability.
 
-   > **Notes**<br>
-   > This application uses the `gpt-4o` model. When choosing which region to deploy to, make sure they're available in that region (i.e. EastUS). For more information, see the [Azure OpenAI Service documentation](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models).
-   > This application also requires a preview version of Document Intelligence (for O365 document support), which at the time of publishing this project is only available in EastUS or WestUS2 or WestEurope regions. Document processing will not work if not deployed in a region with this preview support. See [documentation](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-4.0.0) to check preview status and availability.
+   > [!NOTE]<br>
+   > This application uses the `gpt-4o` model. When choosing which region to deploy to, make sure the desired model is available in that region (i.e. EastUS). For more information, see the [Azure OpenAI Service documentation](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/models).<br><br>
+   > This application also requires a preview version of Document Intelligence (for O365 document support), which at the time of publishing this project is only available in EastUS, WestUS2 or WestEurope regions. Document processing will not work if deployed in a region without this preview support. See [documentation](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?view=doc-intel-4.0.0) to check preview status and availability.
 
-1. After the application has been successfully deployed you will see a URL printed to the console. Click that URL to interact with the application in your browser.
+1. After the application has been successfully deployed you will see two URLs printed to the console, one for the Function (document processing), and one for the app. Click that URL for the `service web` to interact with the application in your browser.
 
 It will look like the following:
 
-!['Output from running azd up'](../assets/endpoint.png)
+!['Output from running azd up'](../docs/endpoints_success.png)
 
 > [!NOTE]<br>
-> It may take a few minutes for the application to be fully deployed.
+> It may take several minutes for the application to be fully deployed.
 
 ### Use existing resources
 
@@ -58,7 +59,7 @@ To enable persistence of chat session history and pinning of preferred queries p
 
 
 ## Optionally Deploy and Configure APIM
-Using the Azure CLI, use the `main.bicep` template to deploy and setup APIM for Azure OpenAI connectivity.
+Using the Azure CLI, use the `gatewayOnly.bicep` template to deploy and setup APIM for Azure OpenAI connectivity.
 
 ```powershell
 az deployment group create -g [RESOURCE_GROUP_NAME] --template-file gatewayOnly.bicep --parameters "aoaiPrimaryAccount=[AZURE_OPENAI_NAME]" --parameters "aoaiSecondaryAccount=[AZURE_OPENAI_NAME]" --parameters "applicationInsightsName=[APP_INSIGHTS_NAME]"
@@ -102,3 +103,18 @@ Click the `Backends` blade to see the primary and secondary backends defined:
 
 ![Backends](../docs/APIM_Backends.png)
 
+## Configure App Settings to use the gateway
+
+To configure the Chat app backend to call Azure OpenAI through the APIM gateway, update the `AZURE_OPENAI_ENDPOINT` for the deployed App Service. 
+
+1. In Azure, open the deployed API Management resource and click into the `APIs/APIs` blade. Select the `Azure OpenAI Service API` definition and `Settings` tab to find the `Base URL`.
+1. In Azure, open the deployed App Service and click into the `Settings/Environment Variables` blade. Find and update the `AZURE_OPENAI_ENDPOINT` value to the Base URL from the previous step, ensuring the endpoint ends with a `/`.
+1. Restart the App Service.
+1. Test with questions in the chat UI to ensure generative answers are still working. 
+
+![APIM Azure OpenAI API Base URL](../docs/APIM_BaseURL.png)
+
+![AZURE_OPENAI_ENDPOINT set to APIM OpenAI API Endpoint](../docs/AppService_APIM_OpenAI_Endpoint_Setting.png)
+
+> [!NOTE] <br>
+> The AZURE_OPENAI_ENDPOINT setting must end with a `/`. When set to the Base URL for the Azure OpenAI Service API gateway as configured, it should end in `/openai/`
